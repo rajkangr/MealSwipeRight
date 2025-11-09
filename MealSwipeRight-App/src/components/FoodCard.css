@@ -1,0 +1,207 @@
+.food-card {
+  position: absolute;
+  width: 90%;
+  max-width: 400px;
+  height: 600px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  user-select: none;
+  overflow: hidden;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  will-change: transform;
+}
+
+.food-card:active {
+  cursor: grabbing;
+}
+
+.food-card.dragging {
+  transition: none;
+}
+
+.food-card-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  color: white;
+  position: relative;
+  z-index: 2;
+}
+
+.food-header {
+  margin-bottom: 20px;
+}
+
+.food-name {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.food-location {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  text-transform: capitalize;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 15px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.food-info {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.food-info::-webkit-scrollbar {
+  width: 6px;
+}
+
+.food-info::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.food-info::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.info-section {
+  margin-bottom: 25px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.info-label {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.info-value {
+  text-transform: capitalize;
+}
+
+.nutrition-section {
+  margin-bottom: 25px;
+}
+
+.nutrition-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.nutrition-item {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.nutrition-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.nutrition-label {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.health-score {
+  margin-bottom: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 1.1rem;
+}
+
+.score-value {
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.diet-types,
+.allergens {
+  margin-bottom: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.diet-label,
+.allergen-label {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.swipe-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  font-weight: bold;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.swipe-left {
+  left: 20px;
+  color: #ff4444;
+}
+
+.swipe-right {
+  right: 20px;
+  color: #44ff44;
+}
+
+.swipe-indicator span:last-child {
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 480px) {
+  .food-card {
+    width: 95%;
+    height: 550px;
+  }
+
+  .food-name {
+    font-size: 1.5rem;
+  }
+
+  .nutrition-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

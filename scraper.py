@@ -51,7 +51,6 @@ def scrape_umass_dining(location='hampshire', date=None):
                 'sugars_g': link.get('data-sugars', '').replace('g', ''),
                 'protein_g': link.get('data-protein', '').replace('g', ''),
                 'protein_dv': link.get('data-protein-dv', ''),
-                'healthfulness_score': link.get('data-healthfulness', ''),
                 'carbon_rating': link.get('data-carbon-list', ''),
                 'diet_types': link.get('data-clean-diet-str', ''),
                 'allergens': link.get('data-allergens', '')
@@ -105,7 +104,7 @@ def save_to_csv(data, filename='um_dining.csv'):
 
     numeric_cols = ['calories', 'calories_from_fat', 'total_fat_g', 'saturated_fat_g',
                     'trans_fat_g', 'cholesterol_mg', 'sodium_mg', 'total_carb_g',
-                    'dietary_fiber_g', 'sugars_g', 'protein_g', 'healthfulness_score']
+                    'dietary_fiber_g', 'sugars_g', 'protein_g']
 
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce')
