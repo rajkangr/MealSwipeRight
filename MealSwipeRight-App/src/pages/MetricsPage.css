@@ -40,6 +40,10 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
+.stat-value {
+  padding-left: 5px;  
+}
+
 .hero-pill {
   display: inline-flex;
   padding: 8px 16px;
