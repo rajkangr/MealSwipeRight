@@ -216,7 +216,7 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
                           className="delete-workout-button"
                           onClick={() => deleteWorkout(workout.id)}
                         >
-                          ðŸ—‘ï¸
+                          X
                         </button>
                       </div>
                       <div className="workout-summary">
