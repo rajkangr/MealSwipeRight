@@ -4,6 +4,7 @@ import Settings from '../components/Settings';
 import MealPlan from '../components/MealPlan';
 import { loadFoodData } from '../utils/foodDataLoader';
 import { findSimilarFoods, findAutoLikeFoods } from '../utils/foodSimilarity';
+import { getDiningBriefOneLiner } from '../utils/geminiClient';
 import './SwipingPage.css';
 
 function SwipingPage({
@@ -49,9 +50,11 @@ function SwipingPage({
   const userName = (userInfo?.name || '').split(' ')[0] || 'Athlete';
   const mealWindow = getMealWindowDetails();
   const heroTitle = showImmersive ? "You're almost there!" : "Today's dining brief";
-  const heroSubtitle = showImmersive
-    ? `Swipe ${Math.max(targetSwipes - totalSwiped, 0)} more dishes to unlock your personalized dashboard.`
-    : `Powered by ${totalSwiped || 'fresh'} swipes from ${diningHallLabel}.`;
+  const [heroSubtitle, setHeroSubtitle] = useState(
+    showImmersive
+      ? `Swipe ${Math.max(targetSwipes - totalSwiped, 0)} more dishes to unlock your personalized dashboard.`
+      : `Powered by ${totalSwiped || 'fresh'} swipes from ${diningHallLabel}.`
+  );
   const progressPercent = Math.min(100, Math.round((totalSwiped / targetSwipes) * 100));
   const remainingFoods = Math.max(foods.length - currentIndex, 0);
 
@@ -219,6 +222,31 @@ function SwipingPage({
       hasNotifiedCompletion.current = false;
     }
   }, [onAllSwipesComplete]);
+
+  // Get Gemini-powered dining brief one-liner (only for dashboard mode, not onboarding)
+  useEffect(() => {
+    if (!showImmersive && experienceMode === 'dashboard' && !isLoading) {
+      const fetchDiningBrief = async () => {
+        try {
+          const oneLiner = await getDiningBriefOneLiner({
+            preferences,
+            userInfo,
+            likedFoods,
+            consumedFoods,
+            caloricMaintenance,
+            totalSwiped,
+            diningHallLabel
+          });
+          setHeroSubtitle(oneLiner);
+        } catch (error) {
+          console.error('Error fetching dining brief:', error);
+          // Fallback to default
+          setHeroSubtitle(`Powered by ${totalSwiped || 'fresh'} swipes from ${diningHallLabel}.`);
+        }
+      };
+      fetchDiningBrief();
+    }
+  }, [showImmersive, experienceMode, isLoading, preferences, userInfo, likedFoods, consumedFoods, caloricMaintenance, totalSwiped, diningHallLabel]);
 
   const handleSwipe = (direction) => {
     if (currentIndex >= foods.length) return;

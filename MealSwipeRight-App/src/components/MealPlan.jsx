@@ -98,7 +98,7 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences, consu
 
     // Greedy algorithm: select foods to match target calories and protein
     const selectedFoods = [];
-    const foodCounts = new Map(); // Track how many times each food is added
+    const foodNameCounts = new Map(); // Track how many times each food NAME is added (regardless of location)
     let currentCalories = 0;
     let currentCarbs = 0;
     let currentProtein = 0;
@@ -109,10 +109,17 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences, consu
     const minCalories = targetCalories - 300; // Within 300 calories below target
     const maxCalories = targetCalories + 200; // Allow up to 200 calories above target
 
+    // Helper to check if we can add a food (max 1 time per food name)
+    const canAddFood = (food) => {
+      const foodName = food.name.toLowerCase().trim();
+      const currentCount = foodNameCounts.get(foodName) || 0;
+      return currentCount < 1; // Max 1 time per food name
+    };
+
     // Helper to add a food to the meal plan
     const addFood = (food) => {
       const macros = getMacros(food);
-      const foodKey = `${food.name}-${food.location}`;
+      const foodName = food.name.toLowerCase().trim();
       
       selectedFoods.push({ ...food, mealType: 'liked' });
       currentCalories += macros.calories;
@@ -120,8 +127,8 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences, consu
       currentProtein += macros.protein;
       currentFat += macros.fat;
       
-      // Track count
-      foodCounts.set(foodKey, (foodCounts.get(foodKey) || 0) + 1);
+      // Track count by food name (not location)
+      foodNameCounts.set(foodName, (foodNameCounts.get(foodName) || 0) + 1);
     };
 
     // Helper to check if we should stop adding foods
@@ -135,6 +142,9 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences, consu
     // First pass: add foods prioritizing protein and calories
     for (const food of likedFoodsList) {
       if (shouldStop()) break;
+      
+      // Check if we can add this food (max 3 times per food name)
+      if (!canAddFood(food)) continue;
       
       const macros = getMacros(food);
       const newCalories = currentCalories + macros.calories;
@@ -176,6 +186,9 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences, consu
         
         for (const food of sortedFoods) {
           if (shouldStop()) break;
+          
+          // Check if we can add this food (max 3 times per food name)
+          if (!canAddFood(food)) continue;
           
           const macros = getMacros(food);
           const newCalories = currentCalories + macros.calories;

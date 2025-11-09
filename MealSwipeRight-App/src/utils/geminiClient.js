@@ -20,7 +20,7 @@ if (API_KEY) {
  * Build system prompt with user context
  */
 function buildSystemPrompt(userData) {
-  const { preferences, userInfo, likedFoods, caloricMaintenance, mealPlan } = userData;
+  const { preferences, userInfo, likedFoods, consumedFoods, caloricMaintenance, mealPlan, gymData } = userData;
 
   let prompt = `You are a helpful nutrition and meal planning assistant for MealSwipeRight, a dining hall food recommendation app at UMass. 
 
@@ -94,6 +94,35 @@ USER CONTEXT:
     }
   }
 
+  // Add consumed foods (today's intake)
+  if (consumedFoods && consumedFoods.length > 0) {
+    prompt += `\nToday's Consumed Foods (${consumedFoods.length} items):\n`;
+    consumedFoods.slice(0, 10).forEach((food, index) => {
+      prompt += `${index + 1}. ${food.name}`;
+      if (food.location && food.location !== 'Custom') prompt += ` (${food.location})`;
+      if (food.calories) prompt += ` - ${food.calories} cal`;
+      if (food.protein_g) prompt += `, ${food.protein_g}g protein`;
+      prompt += `\n`;
+    });
+    if (consumedFoods.length > 10) {
+      prompt += `... and ${consumedFoods.length - 10} more foods consumed today\n`;
+    }
+    
+    // Calculate today's totals
+    const todayTotals = consumedFoods.reduce((acc, food) => ({
+      calories: acc.calories + (parseFloat(food.calories) || 0),
+      protein: acc.protein + (parseFloat(food.protein_g) || 0),
+      carbs: acc.carbs + (parseFloat(food.total_carb_g) || 0),
+      fat: acc.fat + (parseFloat(food.total_fat_g) || 0)
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+    
+    prompt += `\nToday's Totals:\n`;
+    prompt += `- Calories: ${Math.round(todayTotals.calories)}\n`;
+    prompt += `- Protein: ${Math.round(todayTotals.protein)}g\n`;
+    prompt += `- Carbs: ${Math.round(todayTotals.carbs)}g\n`;
+    prompt += `- Fat: ${Math.round(todayTotals.fat)}g\n`;
+  }
+
   // Add meal plan info if available
   if (mealPlan && mealPlan.totals) {
     prompt += `\nCurrent Meal Plan:\n`;
@@ -101,6 +130,46 @@ USER CONTEXT:
     prompt += `- Protein: ${mealPlan.totals.protein}g\n`;
     prompt += `- Carbs: ${mealPlan.totals.carbs}g\n`;
     prompt += `- Fat: ${mealPlan.totals.fat}g\n`;
+  }
+
+  // Add gym/workout data if available
+  if (gymData) {
+    const workouts = gymData.workouts || [];
+    if (workouts.length > 0) {
+      prompt += `\nWorkout History:\n`;
+      prompt += `- Total Workouts: ${workouts.length}\n`;
+      
+      // Get today's workout
+      const today = new Date().toDateString();
+      const todaysWorkout = workouts.find(w => {
+        const workoutDate = new Date(w.date);
+        return workoutDate.toDateString() === today;
+      });
+      
+      if (todaysWorkout) {
+        prompt += `- Today's Workout: ${todaysWorkout.title} (${todaysWorkout.exercises.length} exercises)\n`;
+      }
+      
+      // Get recent workouts
+      const recentWorkouts = workouts.slice(-3).reverse();
+      if (recentWorkouts.length > 0) {
+        prompt += `- Recent Workouts:\n`;
+        recentWorkouts.forEach(w => {
+          const date = new Date(w.date);
+          prompt += `  * ${w.title} on ${date.toLocaleDateString()}\n`;
+        });
+      }
+    }
+    
+    // Add PR data if available
+    if (gymData.benchPress && gymData.benchPress.length > 0) {
+      const benchMax = Math.max(...gymData.benchPress.map(e => e.weight));
+      prompt += `- Bench Press PR: ${benchMax} lbs\n`;
+    }
+    if (gymData.squat && gymData.squat.length > 0) {
+      const squatMax = Math.max(...gymData.squat.map(e => e.weight));
+      prompt += `- Squat PR: ${squatMax} lbs\n`;
+    }
   }
 
   prompt += `\nINSTRUCTIONS:
@@ -168,5 +237,154 @@ export async function sendMessage(userMessage, userData, conversationHistory = [
  */
 export function isApiKeyConfigured() {
   return !!API_KEY;
+}
+
+/**
+ * Get a one-liner for "Today's Dining Brief" based on user context
+ */
+export async function getDiningBriefOneLiner(userData) {
+  if (!API_KEY) {
+    return "Powered by fresh swipes from your dining hall.";
+  }
+
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(API_KEY);
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    
+    const { preferences, userInfo, likedFoods, consumedFoods, caloricMaintenance, totalSwiped, diningHallLabel } = userData;
+    
+    let prompt = `Generate a short, engaging one-liner (max 60 characters) for a dining hall food recommendation app. 
+    
+Context:
+- User has swiped on ${totalSwiped || 0} foods
+- Dining hall: ${diningHallLabel || 'your dining hall'}
+- Caloric maintenance: ${caloricMaintenance || 'not set'} calories
+- Today's consumed foods: ${consumedFoods?.length || 0} items
+- Liked foods: ${likedFoods?.length || 0} items
+
+The one-liner should be:
+- Short and punchy (max 60 characters)
+- Motivating and personalized
+- Reference their progress or dining hall
+- Be friendly and encouraging
+
+Examples:
+- "Powered by 12 fresh swipes from Worcester."
+- "Your taste profile is growing! Keep swiping."
+- "Ready to discover your next favorite meal?"
+
+Generate ONLY the one-liner, nothing else:`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+    
+    // Clean up the response (remove quotes, extra text)
+    return text.replace(/^["']|["']$/g, '').split('\n')[0].trim();
+  } catch (error) {
+    console.error('Error getting dining brief:', error);
+    return `Powered by ${totalSwiped || 'fresh'} swipes from ${diningHallLabel || 'your dining hall'}.`;
+  }
+}
+
+/**
+ * Get 3 personalized bullets for "NEXT UP" section based on user context
+ */
+export async function getNextUpBullets(userData) {
+  if (!API_KEY) {
+    return [
+      'Balancing lean proteins with complex carbs.',
+      `Keeping options open inside ${userData.diningHallLabel || 'your dining hall'}.`,
+      userData.caloricMaintenance 
+        ? `Working toward ${userData.caloricMaintenance} kcal today.`
+        : 'Complete your profile to calculate caloric maintenance.'
+    ];
+  }
+
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(API_KEY);
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    
+    const { preferences, userInfo, likedFoods, consumedFoods, caloricMaintenance, diningHallLabel } = userData;
+    
+    // Calculate today's totals
+    const todayTotals = consumedFoods?.reduce((acc, food) => ({
+      calories: acc.calories + (parseFloat(food.calories) || 0),
+      protein: acc.protein + (parseFloat(food.protein_g) || 0)
+    }), { calories: 0, protein: 0 }) || { calories: 0, protein: 0 };
+    
+    const now = new Date();
+    const hour = now.getHours();
+    const mealTime = hour < 11 ? 'breakfast' : hour < 15 ? 'lunch' : hour < 20 ? 'dinner' : 'evening snack';
+    
+    let prompt = `Generate exactly 3 short, personalized bullet points (max 50 characters each) for a nutrition sidebar "NEXT UP" section.
+
+Context:
+- Current meal time: ${mealTime}
+- Dining hall: ${diningHallLabel || 'your dining hall'}
+- Caloric maintenance: ${caloricMaintenance || 'not set'} calories
+- Today's calories consumed: ${Math.round(todayTotals.calories)} / ${caloricMaintenance || 'N/A'}
+- Today's protein consumed: ${Math.round(todayTotals.protein)}g
+- Dietary preferences: ${preferences?.isVegetarian ? 'Vegetarian' : preferences?.isVegan ? 'Vegan' : 'None'}, ${preferences?.isGlutenFree ? 'Gluten-Free' : ''}, ${preferences?.isDairyFree ? 'Dairy-Free' : ''}
+- Liked foods: ${likedFoods?.length || 0} items
+
+The bullets should:
+- Be actionable and personalized
+- Reference their current progress or goals
+- Be encouraging and motivating
+- Be concise (max 50 characters each)
+- Focus on nutrition, meal timing, or goals
+
+Format as a JSON array of exactly 3 strings, like: ["bullet 1", "bullet 2", "bullet 3"]
+Return ONLY the JSON array, nothing else:`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+    
+    // Try to parse JSON from response
+    try {
+      // Extract JSON array from response (might have markdown code blocks)
+      const jsonMatch = text.match(/\[.*\]/s);
+      if (jsonMatch) {
+        const bullets = JSON.parse(jsonMatch[0]);
+        if (Array.isArray(bullets) && bullets.length === 3) {
+          return bullets.map(b => String(b).trim());
+        }
+      }
+    } catch (parseError) {
+      console.error('Error parsing bullets JSON:', parseError);
+    }
+    
+    // Fallback: try to extract 3 lines
+    const lines = text.split('\n').filter(l => l.trim()).slice(0, 3);
+    if (lines.length === 3) {
+      return lines.map(l => l.replace(/^[-*•]\s*/, '').replace(/^["']|["']$/g, '').trim());
+    }
+    
+    // Final fallback
+    return [
+      'Balancing lean proteins with complex carbs.',
+      `Keeping options open inside ${diningHallLabel || 'your dining hall'}.`,
+      caloricMaintenance 
+        ? `Working toward ${caloricMaintenance} kcal today.`
+        : 'Complete your profile to calculate caloric maintenance.'
+    ];
+  } catch (error) {
+    console.error('Error getting next up bullets:', error);
+    return [
+      'Balancing lean proteins with complex carbs.',
+      `Keeping options open inside ${userData.diningHallLabel || 'your dining hall'}.`,
+      userData.caloricMaintenance 
+        ? `Working toward ${userData.caloricMaintenance} kcal today.`
+        : 'Complete your profile to calculate caloric maintenance.'
+    ];
+  }
 }
 

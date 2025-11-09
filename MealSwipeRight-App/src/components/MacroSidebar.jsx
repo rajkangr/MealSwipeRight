@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { getNextUpBullets } from '../utils/geminiClient';
 import './MacroSidebar.css';
 
-function MacroSidebar({ consumedFoods, caloricMaintenance, preferences, userInfo }) {
+function MacroSidebar({ consumedFoods, caloricMaintenance, preferences, userInfo, likedFoods }) {
+  const [geminiBullets, setGeminiBullets] = useState(null);
   // Get meal window CTA based on current time
   const mealWindowCTA = useMemo(() => {
     const now = new Date();
@@ -30,8 +32,36 @@ function MacroSidebar({ consumedFoods, caloricMaintenance, preferences, userInfo
     return preferences.diningHall.charAt(0).toUpperCase() + preferences.diningHall.slice(1);
   }, [preferences?.diningHall]);
 
+  // Get Gemini-powered bullets for NEXT UP section
+  useEffect(() => {
+    const fetchBullets = async () => {
+      try {
+        const bullets = await getNextUpBullets({
+          preferences,
+          userInfo,
+          likedFoods: likedFoods || [],
+          consumedFoods,
+          caloricMaintenance,
+          diningHallLabel
+        });
+        setGeminiBullets(bullets);
+      } catch (error) {
+        console.error('Error fetching next up bullets:', error);
+        // Fallback to default
+        setGeminiBullets(null);
+      }
+    };
+    fetchBullets();
+  }, [preferences, userInfo, likedFoods, consumedFoods, caloricMaintenance, diningHallLabel]);
+
   // Build taste notes - reactive to preferences, likedFoods, and caloricMaintenance
+  // Use Gemini bullets if available, otherwise fallback to default
   const tasteNotes = useMemo(() => {
+    if (geminiBullets && Array.isArray(geminiBullets) && geminiBullets.length === 3) {
+      return geminiBullets;
+    }
+
+    // Fallback to default
     const notes = [];
 
     if (preferences?.isVegetarian) {
@@ -57,7 +87,7 @@ function MacroSidebar({ consumedFoods, caloricMaintenance, preferences, userInfo
     }
 
     return notes.slice(0, 3);
-  }, [preferences, caloricMaintenance, diningHallLabel]);
+  }, [preferences, caloricMaintenance, diningHallLabel, geminiBullets]);
   
   // Calculate totals from CONSUMED foods, not liked foods
   const totals = useMemo(() => {

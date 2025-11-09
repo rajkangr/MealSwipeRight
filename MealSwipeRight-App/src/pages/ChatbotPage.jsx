@@ -5,9 +5,11 @@ import './ChatbotPage.css';
 function ChatbotPage({ 
   preferences, 
   userInfo, 
-  likedFoods, 
+  likedFoods,
+  consumedFoods,
   caloricMaintenance,
-  mealPlan 
+  mealPlan,
+  gymData
 }) {
   const [messages, setMessages] = useState([
     {
@@ -66,8 +68,10 @@ function ChatbotPage({
           : preferences.diningHall?.name || 'Unknown',
         userInfo,
         likedFoods,
+        consumedFoods: consumedFoods || [],
         caloricMaintenance,
-        mealPlan: mealPlan || null
+        mealPlan: mealPlan || null,
+        gymData: gymData || null
       };
 
       // Get conversation history (excluding system message)

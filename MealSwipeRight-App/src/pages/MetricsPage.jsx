@@ -7,6 +7,16 @@ function MetricsPage({ consumedFoods, caloricMaintenance, gymData, userInfo }) {
     return consumedFoods.slice(-5).reverse();
   }, [consumedFoods]);
 
+  // Get today's workout
+  const todaysWorkout = useMemo(() => {
+    const workouts = gymData?.workouts || [];
+    const today = new Date().toDateString();
+    return workouts.find(w => {
+      const workoutDate = new Date(w.date);
+      return workoutDate.toDateString() === today;
+    }) || null;
+  }, [gymData]);
+
   // Calculate workout stats from actual data
   const workoutStats = useMemo(() => {
     const workouts = gymData?.workouts || [];
@@ -162,6 +172,42 @@ function MetricsPage({ consumedFoods, caloricMaintenance, gymData, userInfo }) {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Today's Workout */}
+      {todaysWorkout && (
+        <section className="metrics-section">
+          <div className="section-header">
+            <p className="panel-eyebrow">Recent activity</p>
+            <h2>Today's Workout</h2>
+          </div>
+          <div className="recent-workout-card">
+            <div className="workout-card-header">
+              <h4>{todaysWorkout.title}</h4>
+              <span className="workout-date">{formatDate(todaysWorkout.date)}</span>
+            </div>
+            <div className="workout-summary">
+              <span>{todaysWorkout.exercises.length} exercises</span>
+              <span>{todaysWorkout.exercises.reduce((sum, e) => sum + e.sets.length, 0)} sets</span>
+            </div>
+            {todaysWorkout.exercises.length > 0 && (
+              <div className="workout-exercises-list">
+                {todaysWorkout.exercises.map((exercise) => (
+                  <div key={exercise.id} className="workout-exercise-item">
+                    <div className="exercise-name">{exercise.name}</div>
+                    <div className="exercise-sets">
+                      {exercise.sets.map((set, idx) => (
+                        <span key={set.id || idx} className="set-badge">
+                          {set.weight}lbs × {set.reps}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}

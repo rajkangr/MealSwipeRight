@@ -248,7 +248,14 @@ function App() {
 
   const handleTabSelect = (tabId) => {
     setActiveTab(tabId);
+    // Scroll to top when navigating to any page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Also scroll to top when activeTab changes (e.g., from TabNavigation component)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
 
   const renderPage = () => {
     switch (activeTab) {
@@ -293,8 +300,10 @@ function App() {
             preferences={preferences}
             userInfo={userInfo}
             likedFoods={likedFoods}
+            consumedFoods={consumedFoods}
             caloricMaintenance={caloricMaintenance}
             mealPlan={null}
+            gymData={gymData}
           />
         );
       default:
@@ -379,6 +388,7 @@ function App() {
             caloricMaintenance={caloricMaintenance}
             preferences={preferences}
             userInfo={userInfo}
+            likedFoods={likedFoods}
           />
         )}
         <div className="app-main-content">
