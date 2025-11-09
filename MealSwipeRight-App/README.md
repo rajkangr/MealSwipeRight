@@ -83,6 +83,21 @@ useEffect(() => {
 - Vite
 - react-swipeable (for swipe gestures)
 - CSS3 (for animations and styling)
+- Google Gemini API (for chatbot)
+
+## Chatbot Setup
+
+The chatbot uses Google's Gemini API. To enable it:
+
+1. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a `.env` file in the `MealSwipeRight-App/` directory
+3. Add your API key:
+   ```
+   VITE_GEMINI_API_KEY=your_api_key_here
+   ```
+4. Restart the development server
+
+The chatbot will use your preferences, liked foods, caloric maintenance, and other user data to provide personalized meal suggestions and nutrition advice.
 
 ## Development
 

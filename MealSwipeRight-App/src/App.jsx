@@ -178,7 +178,15 @@ function App() {
           />
         );
       case 'chatbot':
-        return <ChatbotPage />;
+        return (
+          <ChatbotPage
+            preferences={preferences}
+            userInfo={userInfo}
+            likedFoods={likedFoods}
+            caloricMaintenance={caloricMaintenance}
+            mealPlan={null}
+          />
+        );
       default:
         return <SwipingPage
           preferences={preferences}

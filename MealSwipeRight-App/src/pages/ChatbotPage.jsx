@@ -1,27 +1,159 @@
+import { useState, useRef, useEffect } from 'react';
+import { sendMessage, isApiKeyConfigured } from '../utils/geminiClient';
 import './ChatbotPage.css';
 
-function ChatbotPage() {
+function ChatbotPage({ 
+  preferences, 
+  userInfo, 
+  likedFoods, 
+  caloricMaintenance,
+  mealPlan 
+}) {
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: 'Hello! I\'m your nutrition assistant. I can help you with meal suggestions, nutrition questions, and meal planning based on your preferences. How can I help you today?'
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState(!isApiKeyConfigured());
+
+  // Check API key on mount and when component updates
+  useEffect(() => {
+    const configured = isApiKeyConfigured();
+    setApiKeyError(!configured);
+    if (!configured) {
+      console.warn('⚠️ Gemini API key not found. Please create a .env file in MealSwipeRight-App/ with: VITE_GEMINI_API_KEY=your_key_here');
+    }
+  }, []);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    if (!isApiKeyConfigured()) {
+      setApiKeyError(true);
+      return;
+    }
+
+    const userMessage = inputMessage.trim();
+    setInputMessage('');
+    
+    // Add user message to chat
+    const newUserMessage = {
+      role: 'user',
+      content: userMessage
+    };
+    setMessages(prev => [...prev, newUserMessage]);
+    setIsLoading(true);
+
+    try {
+      // Prepare user data for context
+      const userData = {
+        preferences,
+        userInfo,
+        likedFoods,
+        caloricMaintenance,
+        mealPlan: mealPlan || null
+      };
+
+      // Get conversation history (excluding system message)
+      const conversationHistory = messages.slice(1); // Skip initial greeting
+
+      // Call Gemini API
+      const response = await sendMessage(userMessage, userData, conversationHistory);
+
+      // Add assistant response
+      const assistantMessage = {
+        role: 'assistant',
+        content: response
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = {
+        role: 'assistant',
+        content: `Sorry, I encountered an error: ${error.message}. Please make sure your Gemini API key is configured correctly.`
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
     <div className="chatbot-page">
       <div className="chatbot-header">
-        <h1>💬 Chatbot</h1>
-      </div>
-      <div className="chatbot-content">
-        <div className="chatbot-placeholder">
-          <div className="chatbot-icon">🤖</div>
-          <h2>Chatbot Coming Soon</h2>
-          <p>This feature is under development. Check back soon!</p>
-          <div className="chat-input-placeholder">
-            <input
-              type="text"
-              placeholder="Type your message here..."
-              disabled
-              className="chat-input"
-            />
-            <button className="chat-send-button" disabled>
-              Send
-            </button>
+        <h1>💬 Nutrition Assistant</h1>
+        {apiKeyError && (
+          <div className="api-key-warning">
+            <p>⚠️ Gemini API key not configured. Please set VITE_GEMINI_API_KEY in your .env file.</p>
+            <p className="api-key-hint">Create a .env file in MealSwipeRight-App/ with: VITE_GEMINI_API_KEY=your_api_key_here</p>
           </div>
+        )}
+      </div>
+      
+      <div className="chatbot-content">
+        <div className="chat-messages">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`message ${message.role === 'user' ? 'user-message' : 'assistant-message'}`}
+            >
+              <div className="message-content">
+                {message.content.split('\n').map((line, i) => (
+                  <p key={i}>{line || '\u00A0'}</p>
+                ))}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="message assistant-message">
+              <div className="message-content">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="chat-input-container">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder={apiKeyError ? "API key required..." : "Type your message here..."}
+            disabled={isLoading || apiKeyError}
+            className="chat-input"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!inputMessage.trim() || isLoading || apiKeyError}
+            className="chat-send-button"
+          >
+            {isLoading ? '...' : 'Send'}
+          </button>
         </div>
       </div>
     </div>
@@ -29,4 +161,3 @@ function ChatbotPage() {
 }
 
 export default ChatbotPage;
-
