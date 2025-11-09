@@ -399,3 +399,14 @@
     padding: 20px;
   }
 }
+
+.gym-modal-form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.gym-modal-input.small {
+  padding: 12px;
+}

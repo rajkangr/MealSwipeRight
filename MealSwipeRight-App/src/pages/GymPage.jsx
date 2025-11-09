@@ -51,31 +51,41 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
   };
 
   const handleExerciseSubmit = () => {
-    if (!exerciseName.trim()) {
-      setErrorMessage('Please enter an exercise name');
-      setTimeout(() => setErrorMessage(''), 3000);
-      return;
-    }
+  const weight = parseFloat(setWeight);
+  const reps = parseInt(setReps);
 
-    const workout = workouts.find(w => w.id === pendingExerciseWorkoutId);
-    if (!workout) return;
+  if (
+    !exerciseName.trim() ||
+    isNaN(weight) ||
+    isNaN(reps) ||
+    weight <= 0 ||
+    reps <= 0
+  ) {
+    setErrorMessage('Please enter valid exercise, weight, and reps');
+    setTimeout(() => setErrorMessage(''), 3000);
+    return;
+  }
 
-    const updatedWorkout = {
-      ...workout,
-      exercises: [
-        ...workout.exercises,
-        {
-          id: Date.now(),
-          name: exerciseName.trim(),
-          sets: []
-        }
-      ]
-    };
+  const workout = workouts.find(w => w.id === pendingExerciseWorkoutId);
+  if (!workout) return;
 
-    updateWorkout(updatedWorkout);
-    setShowExerciseModal(false);
-    setExerciseName('');
-    setPendingExerciseWorkoutId(null);
+  const newExercise = {
+    id: Date.now(),
+    name: exerciseName.trim(),
+    sets: [{ id: Date.now(), weight, reps }],
+  };
+
+  const updatedWorkout = {
+    ...workout,
+    exercises: [...workout.exercises, newExercise],
+  };
+
+  updateWorkout(updatedWorkout);
+  setShowExerciseModal(false);
+  setExerciseName('');
+  setSetWeight('');
+  setSetReps('');
+  setPendingExerciseWorkoutId(null);
   };
 
   const addSet = (workoutId, exerciseId) => {
@@ -289,26 +299,51 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
         </div>
       )}
 
-      {/* Exercise Modal */}
+      {/* Add Exercise Modal (Name, Weight, Reps all in one row) */}
       {showExerciseModal && (
         <div className="gym-modal-overlay" onClick={() => setShowExerciseModal(false)}>
           <div className="gym-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Add Exercise</h3>
-            <p className="gym-modal-subtitle">Enter the name of the exercise</p>
-            <input
-              type="text"
-              placeholder="e.g., Bench Press, Squat, Deadlift"
-              value={exerciseName}
-              onChange={(e) => setExerciseName(e.target.value)}
-              className="gym-modal-input"
-              onKeyPress={(e) => e.key === 'Enter' && handleExerciseSubmit()}
-              autoFocus
-            />
+            <p className="gym-modal-subtitle">Enter the details of your exercise</p>
+
+            <div className="gym-modal-form-row">
+              <input
+                type="text"
+                placeholder="Exercise name"
+                value={exerciseName}
+                onChange={(e) => setExerciseName(e.target.value)}
+                className="gym-modal-input"
+              />
+              <input
+                type="number"
+                placeholder="Weight (lbs)"
+                value={setWeight}
+                onChange={(e) => setSetWeight(e.target.value)}
+                className="gym-modal-input small"
+                min="0"
+              />
+              <input
+                type="number"
+                placeholder="Reps"
+                value={setReps}
+                onChange={(e) => setSetReps(e.target.value)}
+                className="gym-modal-input small"
+                min="1"
+                onKeyPress={(e) => e.key === 'Enter' && handleExerciseSubmit()}
+              />
+            </div>
+
             <div className="gym-modal-actions">
-              <button className="gym-modal-button secondary" onClick={() => setShowExerciseModal(false)}>
+              <button
+                className="gym-modal-button secondary"
+                onClick={() => setShowExerciseModal(false)}
+              >
                 Cancel
               </button>
-              <button className="gym-modal-button primary" onClick={handleExerciseSubmit}>
+              <button
+                className="gym-modal-button primary"
+                onClick={handleExerciseSubmit}
+              >
                 Add Exercise
               </button>
             </div>
@@ -316,50 +351,6 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
         </div>
       )}
 
-      {/* Set Modal */}
-      {showSetModal && (
-        <div className="gym-modal-overlay" onClick={() => setShowSetModal(false)}>
-          <div className="gym-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Add Set</h3>
-            <p className="gym-modal-subtitle">Enter weight and reps for this set</p>
-            <div className="gym-modal-form-grid">
-              <div>
-                <label>Weight (lbs)</label>
-                <input
-                  type="number"
-                  placeholder="e.g., 135"
-                  value={setWeight}
-                  onChange={(e) => setSetWeight(e.target.value)}
-                  className="gym-modal-input"
-                  min="0"
-                  step="0.5"
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label>Reps</label>
-                <input
-                  type="number"
-                  placeholder="e.g., 10"
-                  value={setReps}
-                  onChange={(e) => setSetReps(e.target.value)}
-                  className="gym-modal-input"
-                  min="1"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSetSubmit()}
-                />
-              </div>
-            </div>
-            <div className="gym-modal-actions">
-              <button className="gym-modal-button secondary" onClick={() => setShowSetModal(false)}>
-                Cancel
-              </button>
-              <button className="gym-modal-button primary" onClick={handleSetSubmit}>
-                Add Set
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
