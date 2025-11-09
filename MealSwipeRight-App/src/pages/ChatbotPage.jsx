@@ -61,6 +61,9 @@ function ChatbotPage({
       // Prepare user data for context
       const userData = {
         preferences,
+        diningHall: typeof preferences.diningHall === 'string'
+          ? preferences.diningHall
+          : preferences.diningHall?.name || 'Unknown',
         userInfo,
         likedFoods,
         caloricMaintenance,

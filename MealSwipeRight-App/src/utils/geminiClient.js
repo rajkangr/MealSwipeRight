@@ -37,8 +37,18 @@ USER CONTEXT:
   if (preferences) {
     prompt += `\nDietary Preferences:\n`;
     if (preferences.diningHall) {
-      prompt += `- Dining Hall: ${preferences.diningHall.charAt(0).toUpperCase() + preferences.diningHall.slice(1)}\n`;
+      // Ensure it's a string; if it's an object, use its name property; otherwise default to "None"
+      const diningHallStr =
+        typeof preferences.diningHall === 'string'
+          ? preferences.diningHall
+          : preferences.diningHall?.name || 'None';
+
+      prompt += `- Dining Hall: ${diningHallStr.charAt(0).toUpperCase() + diningHallStr.slice(1)}\n`;
+    } else {
+      // Fallback if diningHall is undefined or null
+      prompt += `- Dining Hall: None\n`;
     }
+
     if (preferences.isVegetarian) prompt += `- Vegetarian\n`;
     if (preferences.isVegan) prompt += `- Vegan\n`;
     if (preferences.isGlutenFree) prompt += `- Gluten-Free\n`;
