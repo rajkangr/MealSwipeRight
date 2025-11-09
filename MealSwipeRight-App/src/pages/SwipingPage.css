@@ -179,9 +179,12 @@
   text-align: center;
   color: #e0e0e0;
   padding: 30px 20px;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   max-width: 500px;
   width: 100%;
   max-height: 100%;

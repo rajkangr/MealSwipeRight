@@ -29,10 +29,13 @@
 }
 
 .new-workout-section {
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 15px;
   padding: 25px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .new-workout-section h2 {
@@ -83,10 +86,13 @@
 }
 
 .past-workouts-section {
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 15px;
   padding: 25px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .past-workouts-section h2 {
@@ -103,15 +109,21 @@
 }
 
 .workout-card {
-  background: #f8f9fa;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 20px;
   transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .workout-card:hover {
-  background: #e9ecef;
+  background: rgba(42, 42, 42, 0.5);
   transform: translateX(5px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
 .workout-card-header {
@@ -157,10 +169,13 @@
 }
 
 .active-workout-view {
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 15px;
   padding: 25px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .active-workout-header {
@@ -205,9 +220,13 @@
 }
 
 .exercise-card {
-  background: #f8f9fa;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .exercise-header {
@@ -251,12 +270,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 12px 15px;
   border-radius: 8px;
   font-size: 0.95rem;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #e0e0e0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .set-number {

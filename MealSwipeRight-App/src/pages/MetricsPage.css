@@ -2,7 +2,7 @@
   min-height: 100vh;
   padding: 20px;
   padding-bottom: 100px;
-  background: #f5f5f5;
+  background: #0f0f0f;
 }
 
 .metrics-header {
@@ -26,10 +26,13 @@
 }
 
 .metric-section {
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 15px;
   padding: 25px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .metric-section h2 {
@@ -40,13 +43,16 @@
 }
 
 .metric-card {
-  background: #252525;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 30px;
   text-align: center;
   color: #e0e0e0;
   margin-bottom: 15px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .metric-card:last-child {
@@ -71,20 +77,24 @@
 }
 
 .recent-food-item {
-  background: #252525;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border-radius: 10px;
   padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: all 0.2s;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .recent-food-item:hover {
-  background: #2a2a2a;
+  background: rgba(42, 42, 42, 0.5);
   transform: translateX(5px);
-  border-color: #555;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
 }
 
 .food-name {
@@ -127,12 +137,15 @@
 }
 
 .gym-stat-card {
-  background: #252525;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 25px;
   text-align: center;
   color: #e0e0e0;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .gym-stat-title {
@@ -192,9 +205,12 @@
   gap: 15px;
   height: 200px;
   padding: 20px;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 10px;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .graph-bar-container {

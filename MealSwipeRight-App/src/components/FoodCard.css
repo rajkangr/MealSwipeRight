@@ -3,10 +3,12 @@
   width: 90%;
   max-width: 400px;
   height: 600px;
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   cursor: grab;
   user-select: none;
   overflow: hidden;
