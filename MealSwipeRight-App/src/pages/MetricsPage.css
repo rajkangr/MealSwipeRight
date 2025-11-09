@@ -44,6 +44,10 @@
   padding-left: 5px;  
 }
 
+.final-stat-label {
+  padding-left: 10px;
+}
+
 .hero-pill {
   display: inline-flex;
   padding: 8px 16px;
