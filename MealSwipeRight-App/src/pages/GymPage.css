@@ -399,3 +399,26 @@
     padding: 20px;
   }
 }
+
+.gym-modal-form-row {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.gym-modal-input.small,
+.gym-modal-form-row select {
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.workout-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
