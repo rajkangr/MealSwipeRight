@@ -217,11 +217,14 @@
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   z-index: 2000;
   padding: 10px;
+  padding-top: 10px;
+  padding-bottom: 90px;
   backdrop-filter: blur(5px);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .food-details-modal {
@@ -229,13 +232,14 @@
   border-radius: 20px;
   max-width: 600px;
   width: 100%;
-  height: calc(100vh - 20px);
-  max-height: calc(100vh - 20px);
+  height: calc(100vh - 100px);
+  max-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
+  margin: auto;
 }
 
 .food-details-header {
@@ -392,11 +396,12 @@
 
   .food-details-overlay {
     padding: 5px;
+    padding-bottom: 90px;
   }
 
   .food-details-modal {
-    height: calc(100vh - 10px);
-    max-height: calc(100vh - 10px);
+    height: calc(100vh - 100px);
+    max-height: calc(100vh - 100px);
     border-radius: 15px;
   }
 
