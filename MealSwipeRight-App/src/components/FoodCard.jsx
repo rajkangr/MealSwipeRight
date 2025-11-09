@@ -72,10 +72,6 @@ function FoodCard({ food, onSwipe, index }) {
               <span className="info-label">Category:</span>
               <span className="info-value">{food.category || 'N/A'}</span>
             </div>
-            <div className="info-item">
-              <span className="info-label">Meal Type:</span>
-              <span className="info-value">{food.meal_type || 'N/A'}</span>
-            </div>
           </div>
 
           <div className="nutrition-section">
