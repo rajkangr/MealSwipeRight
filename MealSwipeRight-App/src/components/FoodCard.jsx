@@ -5,6 +5,7 @@ import './FoodCard.css';
 function FoodCard({ food, onSwipe, index }) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handlers = useSwipeable({
     onSwiping: (eventData) => {
@@ -53,7 +54,15 @@ function FoodCard({ food, onSwipe, index }) {
       
       <div className="food-card-content">
         <div className="food-header">
-          <h2 className="food-name">{food.name}</h2>
+          <h2 
+            className="food-name clickable"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDetails(true);
+            }}
+          >
+            {food.name}
+          </h2>
           <div className="food-location">{food.location}</div>
         </div>
         
@@ -114,6 +123,111 @@ function FoodCard({ food, onSwipe, index }) {
           )}
         </div>
       </div>
+
+      {showDetails && (
+        <div className="food-details-overlay" onClick={() => setShowDetails(false)}>
+          <div className="food-details-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="food-details-header">
+              <h2>{food.name}</h2>
+              <button className="close-details-button" onClick={() => setShowDetails(false)}>×</button>
+            </div>
+            <div className="food-details-content">
+              <div className="details-section">
+                <h3>Basic Information</h3>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Serving Size:</span>
+                    <span className="detail-value">{food.serving_size || 'N/A'}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Location:</span>
+                    <span className="detail-value">{food.location ? food.location.charAt(0).toUpperCase() + food.location.slice(1) : 'N/A'}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Category:</span>
+                    <span className="detail-value">{food.category || 'N/A'}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Meal Type:</span>
+                    <span className="detail-value">{food.meal_type || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="details-section">
+                <h3>Complete Nutrition Information</h3>
+                <div className="nutrition-details-grid">
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Calories</span>
+                    <span className="nutrition-detail-value">{food.calories || 'N/A'}</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Calories from Fat</span>
+                    <span className="nutrition-detail-value">{food.calories_from_fat || 'N/A'}</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Total Fat</span>
+                    <span className="nutrition-detail-value">{food.total_fat_g || 'N/A'}g {food.total_fat_dv ? `(${food.total_fat_dv})` : ''}</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Saturated Fat</span>
+                    <span className="nutrition-detail-value">{food.saturated_fat_g || 'N/A'}g</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Trans Fat</span>
+                    <span className="nutrition-detail-value">{food.trans_fat_g || 'N/A'}g</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Cholesterol</span>
+                    <span className="nutrition-detail-value">{food.cholesterol_mg || 'N/A'}mg</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Sodium</span>
+                    <span className="nutrition-detail-value">{food.sodium_mg || 'N/A'}mg {food.sodium_dv ? `(${food.sodium_dv})` : ''}</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Total Carbohydrates</span>
+                    <span className="nutrition-detail-value">{food.total_carb_g || 'N/A'}g {food.total_carb_dv ? `(${food.total_carb_dv})` : ''}</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Dietary Fiber</span>
+                    <span className="nutrition-detail-value">{food.dietary_fiber_g || 'N/A'}g {food.dietary_fiber_dv ? `(${food.dietary_fiber_dv})` : ''}</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Sugars</span>
+                    <span className="nutrition-detail-value">{food.sugars_g || 'N/A'}g</span>
+                  </div>
+                  <div className="nutrition-detail-item">
+                    <span className="nutrition-detail-label">Protein</span>
+                    <span className="nutrition-detail-value">{food.protein_g || 'N/A'}g {food.protein_dv ? `(${food.protein_dv})` : ''}</span>
+                  </div>
+                </div>
+              </div>
+
+              {food.diet_types && (
+                <div className="details-section">
+                  <h3>Diet Types</h3>
+                  <p className="details-text">{food.diet_types}</p>
+                </div>
+              )}
+
+              {food.allergens && (
+                <div className="details-section">
+                  <h3>Allergens</h3>
+                  <p className="details-text">{food.allergens || 'None listed'}</p>
+                </div>
+              )}
+
+              {food.carbon_rating && (
+                <div className="details-section">
+                  <h3>Carbon Rating</h3>
+                  <p className="details-text">{food.carbon_rating}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

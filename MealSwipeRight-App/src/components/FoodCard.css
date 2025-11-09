@@ -35,11 +35,29 @@
   margin-bottom: 20px;
 }
 
+.food-header h2 {
+  color: white !important;
+}
+
 .food-name {
   font-size: 2rem;
   font-weight: bold;
   margin: 0 0 10px 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: white !important;
+}
+
+.food-name.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  text-underline-offset: 4px;
+}
+
+.food-name.clickable:hover {
+  text-decoration-color: rgba(255, 255, 255, 1);
+  transform: scale(1.02);
 }
 
 .food-location {
@@ -190,6 +208,174 @@
   letter-spacing: 2px;
 }
 
+.food-details-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 10px;
+  backdrop-filter: blur(5px);
+  overflow: hidden;
+}
+
+.food-details-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  height: calc(100vh - 20px);
+  max-height: calc(100vh - 20px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.food-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  z-index: 10;
+  flex-shrink: 0;
+  min-height: 60px;
+}
+
+.food-details-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  font-weight: 600;
+  flex: 1;
+  padding-right: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.close-details-button {
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.close-details-button:hover {
+  background: #e0e0e0;
+  border-color: #999;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.food-details-content {
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.details-section {
+  margin-bottom: 30px;
+}
+
+.details-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 8px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.nutrition-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.nutrition-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  color: white;
+}
+
+.nutrition-detail-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.nutrition-detail-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.details-text {
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
 @media (max-width: 480px) {
   .food-card {
     width: 95%;
@@ -201,6 +387,40 @@
   }
 
   .nutrition-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .food-details-overlay {
+    padding: 5px;
+  }
+
+  .food-details-modal {
+    height: calc(100vh - 10px);
+    max-height: calc(100vh - 10px);
+    border-radius: 15px;
+  }
+
+  .food-details-header {
+    padding: 12px 15px;
+    min-height: 50px;
+  }
+
+  .food-details-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .close-details-button {
+    width: 32px;
+    height: 32px;
+    font-size: 1.8rem;
+  }
+
+  .food-details-content {
+    padding: 15px;
+  }
+
+  .details-grid,
+  .nutrition-details-grid {
     grid-template-columns: 1fr;
   }
 }
