@@ -1,0 +1,116 @@
+.macro-sidebar {
+  width: 280px;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 20px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  border-right: 1px solid #333;
+  z-index: 100;
+}
+
+.macro-sidebar-header {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.macro-sidebar-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.macro-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.macro-card {
+  background: #252525;
+  border-radius: 12px;
+  padding: 15px;
+  border: 1px solid #333;
+  transition: all 0.2s;
+}
+
+.macro-card:hover {
+  border-color: #555;
+  transform: translateY(-2px);
+}
+
+.macro-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.macro-title {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.macro-value-display {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.macro-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.macro-progress-fill {
+  height: 100%;
+  background: #666;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.macro-percentage {
+  font-size: 0.85rem;
+  color: #999;
+  text-align: right;
+}
+
+.macro-warning {
+  margin-top: 20px;
+  padding: 12px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.macro-warning p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #999;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .macro-sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .macro-sidebar {
+    display: none;
+  }
+}
+

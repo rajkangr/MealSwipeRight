@@ -2,7 +2,7 @@
   min-height: 100vh;
   padding: 20px;
   padding-bottom: 100px;
-  background: #f5f5f5;
+  background: #0f0f0f;
 }
 
 .gym-header {
@@ -13,7 +13,7 @@
 
 .gym-header h1 {
   font-size: 2rem;
-  color: #333;
+  color: #e0e0e0;
   margin: 0;
 }
 
@@ -29,15 +29,15 @@
 }
 
 .new-workout-section {
-  background: white;
+  background: #1a1a1a;
   border-radius: 15px;
   padding: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #333;
 }
 
 .new-workout-section h2 {
   font-size: 1.5rem;
-  color: #333;
+  color: #e0e0e0;
   margin: 0 0 20px 0;
   font-weight: 600;
 }
@@ -50,22 +50,24 @@
 .workout-title-input {
   flex: 1;
   padding: 15px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #333;
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.2s;
+  background: #252525;
+  color: #e0e0e0;
 }
 
 .workout-title-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #555;
 }
 
 .start-workout-button {
   padding: 15px 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
@@ -76,19 +78,20 @@
 
 .start-workout-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #3a3a3a;
+  border-color: #666;
 }
 
 .past-workouts-section {
-  background: white;
+  background: #1a1a1a;
   border-radius: 15px;
   padding: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #333;
 }
 
 .past-workouts-section h2 {
   font-size: 1.5rem;
-  color: #333;
+  color: #e0e0e0;
   margin: 0 0 20px 0;
   font-weight: 600;
 }
@@ -150,14 +153,14 @@
   display: flex;
   gap: 20px;
   font-size: 0.9rem;
-  color: #666;
+  color: #999;
 }
 
 .active-workout-view {
-  background: white;
+  background: #1a1a1a;
   border-radius: 15px;
   padding: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #333;
 }
 
 .active-workout-header {
@@ -166,21 +169,21 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #333;
 }
 
 .active-workout-header h2 {
   font-size: 1.8rem;
-  color: #333;
+  color: #e0e0e0;
   margin: 0;
   font-weight: 600;
 }
 
 .finish-workout-button {
   padding: 12px 25px;
-  background: linear-gradient(135deg, #44ff44 0%, #00cc00 100%);
-  color: white;
-  border: none;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -190,7 +193,8 @@
 
 .finish-workout-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(68, 255, 68, 0.4);
+  background: #3a3a3a;
+  border-color: #666;
 }
 
 .exercises-list {
@@ -247,24 +251,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: #1a1a1a;
   padding: 12px 15px;
   border-radius: 8px;
   font-size: 0.95rem;
+  border: 1px solid #333;
+  color: #e0e0e0;
 }
 
 .set-number {
   font-weight: 600;
-  color: #667eea;
+  color: #999;
 }
 
 .set-weight {
   font-weight: 600;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .set-reps {
-  color: #666;
+  color: #999;
 }
 
 .no-sets,
@@ -278,9 +284,9 @@
 .add-exercise-button {
   width: 100%;
   padding: 15px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   border-radius: 10px;
   font-size: 1.1rem;
   font-weight: 600;
@@ -290,7 +296,8 @@
 
 .add-exercise-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #3a3a3a;
+  border-color: #666;
 }
 
 @media (max-width: 480px) {

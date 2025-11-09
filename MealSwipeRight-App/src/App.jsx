@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import TabNavigation from './components/TabNavigation';
+import NavSidebar from './components/NavSidebar';
+import MacroSidebar from './components/MacroSidebar';
 import SwipingPage from './pages/SwipingPage';
 import MetricsPage from './pages/MetricsPage';
 import GymPage from './pages/GymPage';
@@ -202,7 +204,15 @@ function App() {
 
   return (
     <div className="app">
-      {renderPage()}
+      <MacroSidebar 
+        likedFoods={likedFoods} 
+        caloricMaintenance={caloricMaintenance}
+      />
+      <div className="app-main-content">
+        {renderPage()}
+      </div>
+      <NavSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Keep bottom tab navigation for mobile */}
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );

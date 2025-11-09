@@ -41,12 +41,12 @@ function MetricsPage({ likedFoods, gymData }) {
   return (
     <div className="metrics-page">
       <div className="metrics-header">
-        <h1>📊 Metrics</h1>
+        <h1>Metrics</h1>
       </div>
 
       <div className="metrics-content">
         <section className="metric-section">
-          <h2>🍽️ Food Stats</h2>
+          <h2>Food Stats</h2>
           <div className="metric-card">
             <div className="metric-value">{totalCalories}</div>
             <div className="metric-label">Total Calories (Liked Foods)</div>
@@ -58,7 +58,7 @@ function MetricsPage({ likedFoods, gymData }) {
         </section>
 
         <section className="metric-section">
-          <h2>❤️ Recently Liked Foods</h2>
+          <h2>Recently Liked Foods</h2>
           {recentLikedFoods.length > 0 ? (
             <div className="recent-foods-list">
               {recentLikedFoods.map((food, index) => (
@@ -79,7 +79,7 @@ function MetricsPage({ likedFoods, gymData }) {
         </section>
 
         <section className="metric-section">
-          <h2>💪 Gym Stats</h2>
+          <h2>Gym Stats</h2>
           <div className="gym-stats-grid">
             <div className="gym-stat-card">
               <div className="gym-stat-title">Bench Press</div>

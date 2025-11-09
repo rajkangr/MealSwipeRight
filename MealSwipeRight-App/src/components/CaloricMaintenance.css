@@ -1,6 +1,6 @@
 .caloric-maintenance-section {
   padding: 20px;
-  background: #f8f9fa;
+  background: #1a1a1a;
   border-radius: 15px;
   margin-top: 20px;
   max-width: 600px;
@@ -10,7 +10,7 @@
 
 .caloric-maintenance-section h2 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: #e0e0e0;
   font-size: 1.5rem;
 }
 
@@ -30,8 +30,8 @@
   padding: 15px 20px;
   border: 2px solid #667eea;
   border-radius: 10px;
-  background: white;
-  color: #667eea;
+  background: #252525;
+  color: #e0e0e0;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -39,7 +39,7 @@
 }
 
 .option-button:hover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #333;
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -55,7 +55,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #333;
+  color: #e0e0e0;
   font-weight: 500;
 }
 
@@ -69,12 +69,12 @@
 
 .manual-entry input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #555;
 }
 
 .set-button {
   padding: 12px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #333;
   color: white;
   border: none;
   border-radius: 8px;
@@ -143,19 +143,19 @@
 
 .user-info-display {
   padding: 15px;
-  background: white;
+  background: #252525;
   border-radius: 10px;
   border: 2px solid #e0e0e0;
 }
 
 .user-info-display p {
   margin: 8px 0;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .calculated-result {
   padding: 20px;
-  background: white;
+  background: #252525;
   border-radius: 10px;
   border: 2px solid #667eea;
   text-align: center;
@@ -163,20 +163,20 @@
 
 .calculated-result h3 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: #e0e0e0;
   font-size: 1.2rem;
 }
 
 .calories-display {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: #e0e0e0;
   margin: 15px 0;
 }
 
 .calculate-button {
   padding: 12px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #333;
   color: white;
   border: none;
   border-radius: 8px;
@@ -195,7 +195,7 @@
   margin-top: 15px;
   padding: 10px 20px;
   background: #e0e0e0;
-  color: #333;
+  color: #e0e0e0;
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;

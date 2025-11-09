@@ -99,10 +99,10 @@ function ChatbotPage({
   return (
     <div className="chatbot-page">
       <div className="chatbot-header">
-        <h1>💬 Nutrition Assistant</h1>
+        <h1>Nutrition Assistant</h1>
         {apiKeyError && (
           <div className="api-key-warning">
-            <p>⚠️ Gemini API key not configured. Please set VITE_GEMINI_API_KEY in your .env file.</p>
+            <p>Gemini API key not configured. Please set VITE_GEMINI_API_KEY in your .env file.</p>
             <p className="api-key-hint">Create a .env file in MealSwipeRight-App/ with: VITE_GEMINI_API_KEY=your_api_key_here</p>
           </div>
         )}

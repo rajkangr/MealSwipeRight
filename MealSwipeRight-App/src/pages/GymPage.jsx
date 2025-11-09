@@ -114,7 +114,7 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
   return (
     <div className="gym-page">
       <div className="gym-header">
-        <h1>💪 Gym</h1>
+        <h1>Gym</h1>
       </div>
 
       <div className="gym-content">

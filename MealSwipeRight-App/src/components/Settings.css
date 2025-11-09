@@ -13,7 +13,7 @@
 }
 
 .settings-modal {
-  background: white;
+  background: #1a1a1a;
   border-radius: 20px;
   max-width: 500px;
   width: 100%;
@@ -30,7 +30,7 @@
   border-bottom: 1px solid #eee;
   position: sticky;
   top: 0;
-  background: white;
+  background: #1a1a1a;
   border-radius: 20px 20px 0 0;
   z-index: 10;
 }
@@ -38,7 +38,7 @@
 .settings-header h2 {
   margin: 0;
   font-size: 1.5rem;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .close-button {
@@ -60,7 +60,7 @@
 
 .close-button:hover {
   background: #f0f0f0;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .settings-content {
@@ -74,7 +74,7 @@
 .settings-section h3 {
   margin: 0 0 15px 0;
   font-size: 1.2rem;
-  color: #333;
+  color: #e0e0e0;
   font-weight: 600;
 }
 
@@ -89,7 +89,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px;
-  background: #f8f9fa;
+  background: #252525;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -103,12 +103,12 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #667eea;
+  accent-color: #666;
 }
 
 .preference-checkbox span {
   font-size: 0.95rem;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .dining-hall-buttons {
@@ -121,8 +121,8 @@
   padding: 15px;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
-  background: white;
-  color: #333;
+  background: #1a1a1a;
+  color: #e0e0e0;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -131,14 +131,14 @@
 }
 
 .dining-hall-btn:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
+  border-color: #555;
+  background: #2a2a2a;
 }
 
 .dining-hall-btn.selected {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-color: #667eea;
+  background: #333;
+  color: #e0e0e0;
+  border-color: #666;
 }
 
 .activity-level-buttons {
@@ -151,8 +151,8 @@
   padding: 12px 15px;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
-  background: white;
-  color: #333;
+  background: #1a1a1a;
+  color: #e0e0e0;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -161,14 +161,14 @@
 }
 
 .activity-level-btn:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
+  border-color: #555;
+  background: #2a2a2a;
 }
 
 .activity-level-btn.selected {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-color: #667eea;
+  background: #333;
+  color: #e0e0e0;
+  border-color: #666;
 }
 
 .user-info-form {
@@ -201,15 +201,15 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #555;
 }
 
 .save-button {
   width: 100%;
   padding: 15px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   border-radius: 10px;
   font-size: 1.1rem;
   font-weight: 600;
@@ -220,7 +220,8 @@
 
 .save-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #3a3a3a;
+  border-color: #666;
 }
 
 .save-button:active {

@@ -70,7 +70,7 @@ function CaloricMaintenance({
 
   return (
     <div className="caloric-maintenance-section">
-      <h2>📊 Daily Caloric Maintenance</h2>
+      <h2>Daily Caloric Maintenance</h2>
       <p className="section-description">
         To create a personalized meal plan, we need to know your daily caloric maintenance.
       </p>

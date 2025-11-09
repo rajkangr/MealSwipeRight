@@ -216,19 +216,19 @@ function SwipingPage({
     <div className="swiping-page">
       <div className="settings-bubble-container">
         <button className="settings-bubble" onClick={() => setShowSettings(true)}>
-          ⚙️
+          Settings
         </button>
       </div>
 
       <div className="swiping-header">
         <div className="preferences-display">
-          {preferences.isVegetarian && <span className="pref-badge">🥬 Vegetarian</span>}
-          {preferences.isVegan && <span className="pref-badge">🌱 Vegan</span>}
-          {preferences.isGlutenFree && <span className="pref-badge">🌾 Gluten Free</span>}
-          {preferences.isDairyFree && <span className="pref-badge">🥛 Dairy Free</span>}
-          {preferences.isKeto && <span className="pref-badge">🥑 Keto</span>}
+          {preferences.isVegetarian && <span className="pref-badge">Vegetarian</span>}
+          {preferences.isVegan && <span className="pref-badge">Vegan</span>}
+          {preferences.isGlutenFree && <span className="pref-badge">Gluten Free</span>}
+          {preferences.isDairyFree && <span className="pref-badge">Dairy Free</span>}
+          {preferences.isKeto && <span className="pref-badge">Keto</span>}
           <span className="pref-badge">
-            📍 {preferences.diningHall.charAt(0).toUpperCase() + preferences.diningHall.slice(1)}
+            {preferences.diningHall.charAt(0).toUpperCase() + preferences.diningHall.slice(1)}
           </span>
         </div>
         <div className="stats-bar">
@@ -255,7 +255,7 @@ function SwipingPage({
           </div>
         ) : foods.length === 0 ? (
           <div className="end-screen">
-            <h2>😔 No Foods Found</h2>
+            <h2>No Foods Found</h2>
             <p>No foods match your preferences. Try adjusting your settings!</p>
             <button className="reset-button" onClick={() => setShowSettings(true)}>
               Change Settings
@@ -295,7 +295,7 @@ function SwipingPage({
           </>
         ) : (
           <div className="end-screen">
-            <h2>🎉 All Done!</h2>
+            <h2>All Done!</h2>
             <p>You've swiped through all the food options.</p>
             <div className="final-stats">
               <div className="final-stat">

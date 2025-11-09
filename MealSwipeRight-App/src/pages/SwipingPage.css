@@ -2,7 +2,7 @@
   height: 100vh;
   overflow: hidden;
   padding-bottom: 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0f0f0f;
   display: flex;
   flex-direction: column;
 }
@@ -15,19 +15,18 @@
 }
 
 .settings-bubble {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  font-size: 1.5rem;
+  padding: 10px 20px;
+  border-radius: 20px;
+  background: #252525;
+  border: 1px solid #333;
+  color: #e0e0e0;
+  font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
 }
 
 .settings-bubble:hover {
@@ -50,23 +49,23 @@
 }
 
 .pref-badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: #252525;
   padding: 6px 15px;
   border-radius: 20px;
   font-size: 0.85rem;
-  backdrop-filter: blur(10px);
   text-transform: capitalize;
-  color: white;
+  color: #e0e0e0;
+  border: 1px solid #333;
 }
 
 .stats-bar {
   display: flex;
   justify-content: space-around;
-  background: rgba(255, 255, 255, 0.2);
+  background: #1a1a1a;
   padding: 12px 15px;
   border-radius: 15px;
   margin-top: 10px;
-  backdrop-filter: blur(10px);
+  border: 1px solid #333;
   flex-shrink: 0;
 }
 
@@ -75,25 +74,26 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  color: white;
+  color: #e0e0e0;
 }
 
 .stat-label {
   font-size: 0.85rem;
-  opacity: 0.9;
+  color: #999;
 }
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: bold;
+  color: #e0e0e0;
 }
 
 .stat-value.liked {
-  color: #44ff44;
+  color: #888;
 }
 
 .stat-value.disliked {
-  color: #ff4444;
+  color: #666;
 }
 
 .swiping-main {
@@ -156,11 +156,13 @@
 }
 
 .like-button {
-  background: linear-gradient(135deg, #44ff44 0%, #00cc00 100%);
+  background: #333;
+  border: 2px solid #555;
 }
 
 .dislike-button {
-  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+  background: #333;
+  border: 2px solid #555;
 }
 
 .button-icon {
@@ -175,11 +177,11 @@
 
 .end-screen {
   text-align: center;
-  color: white;
+  color: #e0e0e0;
   padding: 30px 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #1a1a1a;
   border-radius: 20px;
-  backdrop-filter: blur(10px);
+  border: 1px solid #333;
   max-width: 500px;
   width: 100%;
   max-height: 100%;
@@ -223,11 +225,11 @@
 }
 
 .final-stat-value.liked {
-  color: #44ff44;
+  color: #e0e0e0;
 }
 
 .final-stat-value.disliked {
-  color: #ff4444;
+  color: #999;
 }
 
 .final-stat-label {
@@ -238,15 +240,17 @@
 .liked-list {
   margin: 30px 0;
   text-align: left;
-  background: rgba(255, 255, 255, 0.1);
+  background: #252525;
   padding: 20px;
   border-radius: 15px;
+  border: 1px solid #333;
 }
 
 .liked-list h3 {
   margin: 0 0 15px 0;
   text-align: center;
   font-size: 1.3rem;
+  color: #e0e0e0;
 }
 
 .liked-list ul {
@@ -258,9 +262,11 @@
 .liked-list li {
   padding: 10px;
   margin: 5px 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: #1a1a1a;
   border-radius: 8px;
   text-transform: capitalize;
+  color: #e0e0e0;
+  border: 1px solid #333;
 }
 
 .reset-button,
@@ -269,9 +275,9 @@
   padding: 15px 40px;
   font-size: 1.1rem;
   font-weight: bold;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid white;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   border-radius: 25px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -281,13 +287,14 @@
 
 .reset-button:hover,
 .setup-button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #3a3a3a;
+  border-color: #666;
   transform: scale(1.05);
 }
 
 .no-preferences-message {
   text-align: center;
-  color: white;
+  color: #e0e0e0;
   padding: 60px 20px;
   margin-top: 100px;
 }

@@ -1,0 +1,85 @@
+.nav-sidebar {
+  width: 280px;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 20px;
+  height: 100vh;
+  position: fixed;
+  right: 0;
+  top: 0;
+  border-left: 1px solid #333;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-sidebar-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  letter-spacing: -0.5px;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #b0b0b0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: #252525;
+  color: #e0e0e0;
+  transform: translateX(-3px);
+}
+
+.nav-item.active {
+  background: #333;
+  color: #fff;
+  font-weight: 600;
+  border-left: 3px solid #666;
+}
+
+.nav-label {
+  font-size: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .nav-sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-sidebar {
+    display: none;
+  }
+}
+

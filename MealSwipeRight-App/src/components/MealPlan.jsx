@@ -243,7 +243,7 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
 
   return (
     <div className="meal-plan-section">
-      <h2>🍽️ Your Personalized Meal Plan</h2>
+      <h2>Your Personalized Meal Plan</h2>
       <p className="plan-description">
         Based on your daily caloric maintenance of <strong>{caloricMaintenance} calories</strong>
       </p>
@@ -346,7 +346,7 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
                 <div key={index} className={`food-item ${food.mealType === 'liked' ? 'liked-food' : 'recommended-food'}`}>
                   <div className="food-item-header">
                     <h4>{food.name} {count > 1 && <span className="count-badge">×{count}</span>}</h4>
-                    {food.mealType === 'liked' && <span className="liked-badge">❤️ Liked</span>}
+                    {food.mealType === 'liked' && <span className="liked-badge">Liked</span>}
                   </div>
                   <div className="food-item-nutrition">
                     <span>Calories: {Math.round(totalCalories)} {count > 1 && `(${Math.round(totalCalories / count)} each)`}</span>
