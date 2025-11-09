@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import FoodCard from '../components/FoodCard';
 import Settings from '../components/Settings';
+import CaloricMaintenance from '../components/CaloricMaintenance';
+import MealPlan from '../components/MealPlan';
 import { loadFoodData } from '../utils/foodDataLoader';
 import './SwipingPage.css';
 
@@ -11,7 +13,9 @@ function SwipingPage({
   onUserInfoChange, 
   onLikedFoodsChange,
   swipingState,
-  onSwipingStateChange
+  onSwipingStateChange,
+  caloricMaintenance,
+  onCaloricMaintenanceChange
 }) {
   const [allFoods, setAllFoods] = useState([]);
   const [foods, setFoods] = useState([]);
@@ -313,6 +317,27 @@ function SwipingPage({
                 </ul>
               </div>
             )}
+
+            {!caloricMaintenance && (
+              <CaloricMaintenance
+                userInfo={userInfo}
+                preferences={preferences}
+                onUserInfoChange={onUserInfoChange}
+                onPreferencesChange={onPreferencesChange}
+                onCaloricMaintenanceSet={onCaloricMaintenanceChange}
+                onShowSettings={() => setShowSettings(true)}
+              />
+            )}
+
+            {caloricMaintenance && (
+              <MealPlan
+                caloricMaintenance={caloricMaintenance}
+                likedFoods={likedFoods}
+                allFoods={allFoods}
+                preferences={preferences}
+              />
+            )}
+
             <button className="reset-button" onClick={() => {
               setCurrentIndex(0);
               setLikedFoods([]);

@@ -27,6 +27,7 @@ function App() {
     benchPress: [],
     squat: []
   });
+  const [caloricMaintenance, setCaloricMaintenance] = useState(null);
 
   // Load preferences from localStorage on mount
   useEffect(() => {
@@ -35,6 +36,7 @@ function App() {
     const savedLikedFoods = localStorage.getItem('likedFoods');
     const savedSwipingState = localStorage.getItem('swipingState');
     const savedGymData = localStorage.getItem('gymData');
+    const savedCaloricMaintenance = localStorage.getItem('caloricMaintenance');
 
     if (savedPreferences) {
       setPreferences(JSON.parse(savedPreferences));
@@ -50,6 +52,9 @@ function App() {
     }
     if (savedGymData) {
       setGymData(JSON.parse(savedGymData));
+    }
+    if (savedCaloricMaintenance) {
+      setCaloricMaintenance(parseInt(savedCaloricMaintenance));
     }
   }, []);
 
@@ -81,6 +86,13 @@ function App() {
   useEffect(() => {
     localStorage.setItem('gymData', JSON.stringify(gymData));
   }, [gymData]);
+
+  // Save caloric maintenance to localStorage
+  useEffect(() => {
+    if (caloricMaintenance !== null) {
+      localStorage.setItem('caloricMaintenance', caloricMaintenance.toString());
+    }
+  }, [caloricMaintenance]);
 
   const handlePreferencesChange = (newPreferences) => {
     setPreferences(newPreferences);
@@ -147,6 +159,8 @@ function App() {
             onLikedFoodsChange={setLikedFoods}
             swipingState={swipingState}
             onSwipingStateChange={setSwipingState}
+            caloricMaintenance={caloricMaintenance}
+            onCaloricMaintenanceChange={setCaloricMaintenance}
           />
         );
       case 'metrics':

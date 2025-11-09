@@ -8,7 +8,8 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
     isDairyFree: false,
     isVegan: false,
     isKeto: false,
-    diningHall: ''
+    diningHall: '',
+    activityLevel: ''
   });
 
   const [localUserInfo, setLocalUserInfo] = useState(userInfo || {
@@ -120,8 +121,14 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
                 <label>Weight (lbs)</label>
                 <input
                   type="number"
+                  min="0"
                   value={localUserInfo.weight}
-                  onChange={(e) => handleUserInfoChange('weight', e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || parseFloat(val) >= 0) {
+                      handleUserInfoChange('weight', val);
+                    }
+                  }}
                   placeholder="Enter weight"
                 />
               </div>
@@ -129,8 +136,14 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
                 <label>Height (inches)</label>
                 <input
                   type="number"
+                  min="0"
                   value={localUserInfo.height}
-                  onChange={(e) => handleUserInfoChange('height', e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || parseFloat(val) >= 0) {
+                      handleUserInfoChange('height', val);
+                    }
+                  }}
                   placeholder="Enter height"
                 />
               </div>
@@ -143,18 +156,69 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
                   <option value="">Select</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
-                  <option value="other">Other</option>
                 </select>
               </div>
               <div className="form-group">
                 <label>Age</label>
                 <input
                   type="number"
+                  min="0"
                   value={localUserInfo.age}
-                  onChange={(e) => handleUserInfoChange('age', e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || parseFloat(val) >= 0) {
+                      handleUserInfoChange('age', val);
+                    }
+                  }}
                   placeholder="Enter age"
                 />
               </div>
+            </div>
+          </section>
+
+          <section className="settings-section">
+            <h3>Activity Level</h3>
+            <div className="activity-level-buttons">
+              <button
+                className={`activity-level-btn ${
+                  localPreferences.activityLevel === 'sedentary' ? 'selected' : ''
+                }`}
+                onClick={() => handlePreferenceChange('activityLevel', 'sedentary')}
+              >
+                Sedentary (little/no exercise)
+              </button>
+              <button
+                className={`activity-level-btn ${
+                  localPreferences.activityLevel === 'lightly' ? 'selected' : ''
+                }`}
+                onClick={() => handlePreferenceChange('activityLevel', 'lightly')}
+              >
+                Lightly Active (1-3 days/week)
+              </button>
+              <button
+                className={`activity-level-btn ${
+                  localPreferences.activityLevel === 'moderately' ? 'selected' : ''
+                }`}
+                onClick={() => handlePreferenceChange('activityLevel', 'moderately')}
+              >
+                Moderately Active (3-5 days/week)
+              </button>
+              <button
+                className={`activity-level-btn ${
+                  localPreferences.activityLevel === 'active' ? 'selected' : ''
+                }`}
+                onClick={() => handlePreferenceChange('activityLevel', 'active')}
+              >
+                Active (6-7 days/week)
+              </button>
+              <button
+                className={`activity-level-btn ${
+                  localPreferences.activityLevel === 'very' ? 'selected' : ''
+                }`}
+                onClick={() => handlePreferenceChange('activityLevel', 'very')}
+              >
+                Very Active (2x per day)
+              </button>
             </div>
           </section>
 
