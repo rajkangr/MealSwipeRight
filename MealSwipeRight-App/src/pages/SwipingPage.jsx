@@ -17,7 +17,8 @@ function SwipingPage({
   caloricMaintenance,
   onCaloricMaintenanceChange,
   experienceMode = 'dashboard',
-  onboardingTarget = 5
+  onboardingTarget = 5,
+  onAllSwipesComplete
 }) {
   const [allFoods, setAllFoods] = useState([]);
   const [foods, setFoods] = useState([]);
@@ -26,14 +27,21 @@ function SwipingPage({
   const [dislikedFoods, setDislikedFoods] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const isInitialMount = useRef(true);
   const prevPreferencesRef = useRef(null);
+  const hasNotifiedCompletion = useRef(false);
 
   const targetSwipes = Math.max(1, onboardingTarget);
   const totalSwiped = likedFoods.length + dislikedFoods.length;
   const hasTasteProfile = totalSwiped >= targetSwipes;
   const showImmersive = experienceMode === 'onboarding' && !hasTasteProfile;
-  const diningHallLabel = preferences?.diningHall
+  const isOnboardingMode = experienceMode === 'onboarding';
+  const diningHallLabel = preferences?.diningHall && Array.isArray(preferences.diningHall) && preferences.diningHall.length > 0
+    ? preferences.diningHall.length === 1
+      ? `${preferences.diningHall[0].charAt(0).toUpperCase()}${preferences.diningHall[0].slice(1)}`
+      : `${preferences.diningHall.length} dining halls`
+    : preferences?.diningHall && !Array.isArray(preferences.diningHall)
     ? `${preferences.diningHall.charAt(0).toUpperCase()}${preferences.diningHall.slice(1)}`
     : 'your dining hall';
   const userName = (userInfo?.name || '').split(' ')[0] || 'Athlete';
@@ -75,13 +83,15 @@ function SwipingPage({
   useEffect(() => {
     if (isInitialMount.current && swipingState) {
       const prevDiningHall = swipingState.preferences?.diningHall;
-      if (prevDiningHall === preferences?.diningHall) {
+      const prevDiningHallStr = Array.isArray(prevDiningHall) ? prevDiningHall.sort().join(',') : prevDiningHall;
+      const currentDiningHallStr = Array.isArray(preferences?.diningHall) ? preferences.diningHall.sort().join(',') : preferences?.diningHall;
+      if (prevDiningHallStr === currentDiningHallStr) {
         setCurrentIndex(swipingState.currentIndex || 0);
         setLikedFoods(swipingState.likedFoods || []);
         setDislikedFoods(swipingState.dislikedFoods || []);
       }
       isInitialMount.current = false;
-      prevPreferencesRef.current = preferences?.diningHall;
+      prevPreferencesRef.current = Array.isArray(preferences?.diningHall) ? preferences.diningHall.sort().join(',') : preferences?.diningHall;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
@@ -90,12 +100,13 @@ function SwipingPage({
   useEffect(() => {
     if (!isInitialMount.current) {
       const prevDiningHall = prevPreferencesRef.current;
-      const currentDiningHall = preferences?.diningHall;
+      const currentDiningHall = Array.isArray(preferences?.diningHall) ? preferences.diningHall.sort().join(',') : preferences?.diningHall;
 
       if (prevDiningHall !== currentDiningHall) {
         setCurrentIndex(0);
         setLikedFoods([]);
         setDislikedFoods([]);
+        hasNotifiedCompletion.current = false;
         prevPreferencesRef.current = currentDiningHall;
       }
     }
@@ -141,26 +152,33 @@ function SwipingPage({
   // Persist swiping state
   useEffect(() => {
     if (!isInitialMount.current && onSwipingStateChange) {
+      const allComplete = foods.length > 0 && currentIndex >= foods.length;
       onSwipingStateChange({
         currentIndex,
         likedFoods,
         dislikedFoods,
-        preferences
+        preferences,
+        totalFoodsAvailable: foods.length,
+        allSwipesComplete: allComplete
       });
     }
-  }, [currentIndex, likedFoods, dislikedFoods, preferences, onSwipingStateChange]);
+  }, [currentIndex, likedFoods, dislikedFoods, preferences, foods.length, onSwipingStateChange]);
 
   // Filter foods based on preferences
   useEffect(() => {
-    if (!preferences || !preferences.diningHall || isLoading) {
+    const diningHalls = Array.isArray(preferences?.diningHall) 
+      ? preferences.diningHall 
+      : (preferences?.diningHall ? [preferences.diningHall] : []);
+    
+    if (!preferences || diningHalls.length === 0 || isLoading) {
       setFoods([]);
       return;
     }
 
     let filtered = [...allFoods];
 
-    if (preferences.diningHall) {
-      filtered = filtered.filter((food) => food.location === preferences.diningHall);
+    if (diningHalls.length > 0) {
+      filtered = filtered.filter((food) => diningHalls.includes(food.location));
     }
 
     if (preferences.isVegetarian || preferences.isVegan) {
@@ -194,6 +212,21 @@ function SwipingPage({
     setFoods(filtered);
   }, [preferences, allFoods, isLoading]);
 
+  // Check if all swipes are complete and notify parent
+  useEffect(() => {
+    if (onAllSwipesComplete && !isLoading && foods.length > 0 && currentIndex >= foods.length && !hasNotifiedCompletion.current) {
+      hasNotifiedCompletion.current = true;
+      onAllSwipesComplete();
+    }
+  }, [currentIndex, foods.length, isLoading, onAllSwipesComplete]);
+
+  // Reset completion notification when callback changes (e.g., new swiping session)
+  useEffect(() => {
+    if (onAllSwipesComplete) {
+      hasNotifiedCompletion.current = false;
+    }
+  }, [onAllSwipesComplete]);
+
   const handleSwipe = (direction) => {
     if (currentIndex >= foods.length) return;
 
@@ -207,7 +240,16 @@ function SwipingPage({
       setDislikedFoods([...dislikedFoods, currentFood]);
     }
 
-    setCurrentIndex((prev) => prev + 1);
+    const newIndex = currentIndex + 1;
+    setCurrentIndex(newIndex);
+
+    // If this was the last food, trigger smooth transition
+    if (newIndex >= foods.length) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 500);
+    }
   };
 
   const handleButtonSwipe = (direction) => {
@@ -220,7 +262,11 @@ function SwipingPage({
     { label: 'Remaining', value: remainingFoods, tone: 'neutral' }
   ];
 
-  if (!preferences || !preferences.diningHall) {
+  const hasDiningHalls = Array.isArray(preferences?.diningHall) 
+    ? preferences.diningHall.length > 0
+    : (preferences?.diningHall ? true : false);
+  
+  if (!preferences || !hasDiningHalls) {
     return (
       <div className="swiping-page swiping-page--empty">
         <div className="swiping-hero">
@@ -239,6 +285,107 @@ function SwipingPage({
           userInfo={userInfo}
           onUserInfoChange={onUserInfoChange}
         />
+      </div>
+    );
+  }
+
+  // If in onboarding mode, wrap in onboarding-style container
+  if (isOnboardingMode) {
+    return (
+      <div className="swiping-onboarding-container">
+        <div className="swiping-onboarding-background" />
+        <div className="swiping-onboarding-card">
+          <div className="swiping-onboarding-header">
+            <h1>Let's build your taste profile</h1>
+            <p>Swipe through dishes to help us understand your preferences</p>
+            <div className="swiping-onboarding-progress">
+              <div className="swiping-onboarding-progress-track">
+                <div 
+                  className="swiping-onboarding-progress-fill" 
+                  style={{ width: `${foods.length > 0 ? Math.min(100, Math.round((totalSwiped / foods.length) * 100)) : 0}%` }} 
+                />
+              </div>
+              <div className="swiping-onboarding-progress-text">
+                {totalSwiped} of {foods.length || '...'} dishes reviewed
+              </div>
+            </div>
+          </div>
+
+          <div className="swiping-onboarding-content">
+            {isLoading ? (
+              <div className="swiping-onboarding-loading">
+                <h2>Loading...</h2>
+                <p>Pulling the latest dining options.</p>
+              </div>
+            ) : foods.length === 0 ? (
+              <div className="swiping-onboarding-loading">
+                <h2>No Foods Found</h2>
+                <p>No foods match your preferences. Try adjusting your settings!</p>
+                <button className="swiping-onboarding-button" onClick={() => setShowSettings(true)}>
+                  Change Settings
+                </button>
+              </div>
+            ) : currentIndex < foods.length || isTransitioning ? (
+              <>
+                <div className={`swiping-onboarding-card-stack ${isTransitioning ? 'fade-out' : ''}`}>
+                  {currentIndex < foods.length && foods.slice(currentIndex, currentIndex + 3).map((food, index) => (
+                    <FoodCard
+                      key={`${food.name}-${currentIndex + index}`}
+                      food={food}
+                      onSwipe={handleSwipe}
+                      index={index}
+                    />
+                  ))}
+                </div>
+
+                {!isTransitioning && (
+                  <div className="swiping-onboarding-actions">
+                    <button
+                      className="swiping-onboarding-action-button dislike"
+                      onClick={() => handleButtonSwipe('left')}
+                      aria-label="Dislike"
+                    >
+                      <span className="button-icon">👎</span>
+                      <span>Pass</span>
+                    </button>
+                    <button
+                      className="swiping-onboarding-action-button like"
+                      onClick={() => handleButtonSwipe('right')}
+                      aria-label="Like"
+                    >
+                      <span className="button-icon">❤️</span>
+                      <span>Save</span>
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="swiping-onboarding-complete fade-in">
+                <h2>All Done!</h2>
+                <p>You've swiped through all the food options.</p>
+                <div className="swiping-onboarding-stats">
+                  <div className="swiping-onboarding-stat">
+                    <span className="stat-value liked">{likedFoods.length}</span>
+                    <span className="stat-label">Liked Foods</span>
+                  </div>
+                  <div className="swiping-onboarding-stat">
+                    <span className="stat-value disliked">{dislikedFoods.length}</span>
+                    <span className="stat-label">Passed Foods</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Settings
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
+            preferences={preferences}
+            onPreferencesChange={onPreferencesChange}
+            userInfo={userInfo}
+            onUserInfoChange={onUserInfoChange}
+          />
+        </div>
       </div>
     );
   }
@@ -272,7 +419,15 @@ function SwipingPage({
         {preferences.isGlutenFree && <span className="pref-badge">Gluten Free</span>}
         {preferences.isDairyFree && <span className="pref-badge">Dairy Free</span>}
         {preferences.isKeto && <span className="pref-badge">Keto</span>}
-        <span className="pref-badge">{diningHallLabel}</span>
+        {Array.isArray(preferences.diningHall) && preferences.diningHall.length > 0
+          ? preferences.diningHall.map((hall, idx) => (
+              <span key={idx} className="pref-badge">
+                {hall.charAt(0).toUpperCase() + hall.slice(1)}
+              </span>
+            ))
+          : preferences.diningHall && (
+              <span className="pref-badge">{diningHallLabel}</span>
+            )}
       </div>
 
       <div className="swiping-content">
@@ -307,10 +462,10 @@ function SwipingPage({
                   Change Settings
                 </button>
               </div>
-            ) : currentIndex < foods.length ? (
+            ) : currentIndex < foods.length || isTransitioning ? (
               <>
-                <div className="card-stack">
-                  {foods.slice(currentIndex, currentIndex + 3).map((food, index) => (
+                <div className={`card-stack ${isTransitioning ? 'fade-out' : ''}`}>
+                  {currentIndex < foods.length && foods.slice(currentIndex, currentIndex + 3).map((food, index) => (
                     <FoodCard
                       key={`${food.name}-${currentIndex + index}`}
                       food={food}
@@ -320,27 +475,29 @@ function SwipingPage({
                   ))}
                 </div>
 
-                <div className="action-buttons">
-                  <button
-                    className="swipe-button dislike-button"
-                    onClick={() => handleButtonSwipe('left')}
-                    aria-label="Dislike"
-                  >
-                    <span className="button-icon">👎</span>
-                    <span className="button-text">Pass</span>
-                  </button>
-                  <button
-                    className="swipe-button like-button"
-                    onClick={() => handleButtonSwipe('right')}
-                    aria-label="Like"
-                  >
-                    <span className="button-icon">❤️</span>
-                    <span className="button-text">Save</span>
-                  </button>
-                </div>
+                {!isTransitioning && (
+                  <div className="action-buttons">
+                    <button
+                      className="swipe-button dislike-button"
+                      onClick={() => handleButtonSwipe('left')}
+                      aria-label="Dislike"
+                    >
+                      <span className="button-icon">👎</span>
+                      <span className="button-text">Pass</span>
+                    </button>
+                    <button
+                      className="swipe-button like-button"
+                      onClick={() => handleButtonSwipe('right')}
+                      aria-label="Like"
+                    >
+                      <span className="button-icon">❤️</span>
+                      <span className="button-text">Save</span>
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
-              <div className="end-screen">
+              <div className="end-screen fade-in">
                 <h2>All Done!</h2>
                 <p>You've swiped through all the food options.</p>
                 <div className="final-stats">
@@ -353,18 +510,6 @@ function SwipingPage({
                     <span className="final-stat-label">Passed Foods</span>
                   </div>
                 </div>
-                {likedFoods.length > 0 && (
-                  <div className="liked-list">
-                    <h3>Your Liked Foods:</h3>
-                    <ul>
-                      {likedFoods.map((food, index) => (
-                        <li key={index}>
-                          {food.name} — {food.location}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
                 <button
                   className="reset-button"
                   onClick={() => {

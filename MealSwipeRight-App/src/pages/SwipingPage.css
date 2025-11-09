@@ -274,6 +274,36 @@
   box-shadow: var(--shadow-soft);
 }
 
+.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+.fade-in {
+  animation: fadeInSlideUp 0.6s ease forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .end-screen.glass {
   background: rgba(255, 255, 255, 0.05);
 }
@@ -504,6 +534,256 @@
 .plan-card.glass {
   background: rgba(8, 10, 15, 0.8);
   box-shadow: var(--shadow-soft);
+}
+
+/* Onboarding-style swiping page */
+.swiping-onboarding-container {
+  position: relative;
+  min-height: 100vh;
+  background: #030507;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow: hidden;
+}
+
+.swiping-onboarding-background {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% -10%, rgba(255, 51, 88, 0.25), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(86, 160, 255, 0.2), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.07), transparent 50%);
+  opacity: 0.9;
+  filter: blur(40px);
+}
+
+.swiping-onboarding-background::after,
+.swiping-onboarding-background::before {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 60%);
+  animation: float 12s ease-in-out infinite;
+}
+
+.swiping-onboarding-background::before {
+  top: 10%;
+  right: 15%;
+  animation-delay: 2s;
+}
+
+.swiping-onboarding-background::after {
+  bottom: 5%;
+  left: 10%;
+  animation-delay: 6s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.swiping-onboarding-card {
+  position: relative;
+  z-index: 1;
+  width: min(600px, 100%);
+  max-width: 100%;
+  background: rgba(7, 9, 14, 0.9);
+  border-radius: var(--radius-lg);
+  padding: clamp(24px, 3vw, 32px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.swiping-onboarding-header {
+  text-align: center;
+}
+
+.swiping-onboarding-header h1 {
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.swiping-onboarding-header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 16px 0;
+}
+
+.swiping-onboarding-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.swiping-onboarding-progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.swiping-onboarding-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  transition: width 0.3s ease;
+}
+
+.swiping-onboarding-progress-text {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.swiping-onboarding-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-height: auto;
+  justify-content: flex-start;
+  padding-bottom: 20px;
+}
+
+.swiping-onboarding-card-stack {
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.swiping-onboarding-actions {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  justify-content: center;
+}
+
+.swiping-onboarding-action-button {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1rem;
+}
+
+.swiping-onboarding-action-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.swiping-onboarding-action-button.like {
+  background: linear-gradient(135deg, rgba(255, 51, 88, 0.9), rgba(255, 91, 122, 0.9));
+  color: #050505;
+  border: none;
+}
+
+.swiping-onboarding-action-button.like:hover {
+  box-shadow: 0 10px 30px rgba(255, 51, 88, 0.3);
+}
+
+.swiping-onboarding-action-button .button-icon {
+  font-size: 1.2rem;
+}
+
+.swiping-onboarding-loading,
+.swiping-onboarding-complete {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.swiping-onboarding-loading h2,
+.swiping-onboarding-complete h2 {
+  font-size: 1.8rem;
+  margin: 0 0 12px 0;
+  color: var(--text-primary);
+}
+
+.swiping-onboarding-loading p,
+.swiping-onboarding-complete p {
+  color: var(--text-muted);
+  margin: 0 0 24px 0;
+}
+
+.swiping-onboarding-button {
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(255, 51, 88, 0.9), rgba(255, 91, 122, 0.9));
+  color: #050505;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.swiping-onboarding-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 51, 88, 0.3);
+}
+
+.swiping-onboarding-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.swiping-onboarding-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.swiping-onboarding-stat .stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.swiping-onboarding-stat .stat-value.liked {
+  color: var(--accent);
+}
+
+.swiping-onboarding-stat .stat-value.disliked {
+  color: var(--text-muted);
+}
+
+.swiping-onboarding-stat .stat-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 900px) {

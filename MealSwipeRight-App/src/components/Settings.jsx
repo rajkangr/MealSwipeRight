@@ -8,7 +8,7 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
     isDairyFree: false,
     isVegan: false,
     isKeto: false,
-    diningHall: '',
+    diningHall: [],
     activityLevel: ''
   });
 
@@ -99,19 +99,31 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
           </section>
 
           <section className="settings-section">
-            <h3>Dining Hall</h3>
+            <h3>Dining Halls (select one or more)</h3>
             <div className="dining-hall-buttons">
-              {diningHalls.map((hall) => (
-                <button
-                  key={hall.value}
-                  className={`dining-hall-btn ${
-                    localPreferences.diningHall === hall.value ? 'selected' : ''
-                  }`}
-                  onClick={() => handlePreferenceChange('diningHall', hall.value)}
-                >
-                  {hall.label}
-                </button>
-              ))}
+              {diningHalls.map((hall) => {
+                const isSelected = Array.isArray(localPreferences.diningHall) 
+                  ? localPreferences.diningHall.includes(hall.value)
+                  : false;
+                return (
+                  <button
+                    key={hall.value}
+                    className={`dining-hall-btn ${isSelected ? 'selected' : ''}`}
+                    onClick={() => {
+                      const currentHalls = Array.isArray(localPreferences.diningHall) 
+                        ? localPreferences.diningHall 
+                        : (localPreferences.diningHall ? [localPreferences.diningHall] : []);
+                      if (isSelected) {
+                        handlePreferenceChange('diningHall', currentHalls.filter(h => h !== hall.value));
+                      } else {
+                        handlePreferenceChange('diningHall', [...currentHalls, hall.value]);
+                      }
+                    }}
+                  >
+                    {hall.label}
+                  </button>
+                );
+              })}
             </div>
           </section>
 

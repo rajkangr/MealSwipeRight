@@ -22,7 +22,7 @@ const defaultPreferences = {
   isGlutenFree: false,
   isDairyFree: false,
   isKeto: false,
-  diningHall: '',
+  diningHall: [],
   activityLevel: ''
 };
 
@@ -53,8 +53,8 @@ function OnboardingFlow({ onComplete }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!userInfo.name || !preferences.diningHall) {
-      setError('Please share your name and pick a dining hall.');
+    if (!userInfo.name || !preferences.diningHall || preferences.diningHall.length === 0) {
+      setError('Please share your name and pick at least one dining hall.');
       return;
     }
 
@@ -71,7 +71,7 @@ function OnboardingFlow({ onComplete }) {
         <p className="onboarding-eyebrow">Welcome</p>
         <h1>Let's lock in your preferences.</h1>
         <p className="onboarding-copy">
-          We keep things light — tell us about you and we'll tailor the dining hall just for you.
+          We keep things light. Tell us about you and we'll tailor the dining experience just for you.
         </p>
 
         <div className="onboarding-field">
@@ -80,7 +80,7 @@ function OnboardingFlow({ onComplete }) {
             type="text"
             value={userInfo.name}
             onChange={(e) => handleUserUpdate('name', e.target.value)}
-            placeholder="Jordan Rivers"
+            placeholder="Hack UMass"
           />
         </div>
 
@@ -119,7 +119,10 @@ function OnboardingFlow({ onComplete }) {
           </div>
           <div className="onboarding-field">
             <label>Sex</label>
-            <select value={userInfo.sex} onChange={(e) => handleUserUpdate('sex', e.target.value)}>
+            <select
+              value={userInfo.sex}
+              onChange={(e) => handleUserUpdate('sex', e.target.value)}
+            >
               <option value="">Select</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -129,18 +132,30 @@ function OnboardingFlow({ onComplete }) {
         </div>
 
         <div className="onboarding-field">
-          <label>Dining Hall</label>
+          <label>Dining Halls (select one or more)</label>
           <div className="dining-options">
-            {diningHalls.map((hall) => (
-              <button
-                type="button"
-                key={hall.value}
-                className={`dining-option ${preferences.diningHall === hall.value ? 'selected' : ''}`}
-                onClick={() => handleSelectChange('diningHall', hall.value)}
-              >
-                {hall.label}
-              </button>
-            ))}
+            {diningHalls.map((hall) => {
+              const isSelected = Array.isArray(preferences.diningHall) 
+                ? preferences.diningHall.includes(hall.value)
+                : false;
+              return (
+                <button
+                  type="button"
+                  key={hall.value}
+                  className={`dining-option ${isSelected ? 'selected' : ''}`}
+                  onClick={() => {
+                    const currentHalls = Array.isArray(preferences.diningHall) ? preferences.diningHall : [];
+                    if (isSelected) {
+                      handleSelectChange('diningHall', currentHalls.filter(h => h !== hall.value));
+                    } else {
+                      handleSelectChange('diningHall', [...currentHalls, hall.value]);
+                    }
+                  }}
+                >
+                  {hall.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

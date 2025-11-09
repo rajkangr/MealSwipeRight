@@ -10,7 +10,7 @@ import './App.css';
 
 const MIN_BASELINE_SWIPES = 6;
 const tabs = [
-  { id: 'swiping', label: 'Swiping' },
+  { id: 'swiping', label: 'Home' },
   { id: 'metrics', label: 'Metrics' },
   { id: 'gym', label: 'Gym' },
   { id: 'chatbot', label: 'Chat' }
@@ -31,7 +31,9 @@ function App() {
     currentIndex: 0,
     likedFoods: [],
     dislikedFoods: [],
-    preferences: null
+    preferences: null,
+    totalFoodsAvailable: 0,
+    allSwipesComplete: false
   });
   const [gymData, setGymData] = useState({
     workouts: [],
@@ -39,6 +41,7 @@ function App() {
     squat: []
   });
   const [caloricMaintenance, setCaloricMaintenance] = useState(null);
+  const [initialSwipingComplete, setInitialSwipingComplete] = useState(false);
 
   // Load preferences from localStorage on mount
   useEffect(() => {
@@ -48,6 +51,7 @@ function App() {
     const savedSwipingState = localStorage.getItem('swipingState');
     const savedGymData = localStorage.getItem('gymData');
     const savedCaloricMaintenance = localStorage.getItem('caloricMaintenance');
+    const savedInitialSwipingComplete = localStorage.getItem('initialSwipingComplete');
 
     if (savedPreferences) {
       setPreferences(JSON.parse(savedPreferences));
@@ -66,6 +70,29 @@ function App() {
     }
     if (savedCaloricMaintenance) {
       setCaloricMaintenance(parseInt(savedCaloricMaintenance));
+    }
+    // Only restore initialSwipingComplete if we actually have swipes recorded
+    // This prevents the issue where it's set to true but user hasn't actually swiped
+    if (savedInitialSwipingComplete === 'true') {
+      const savedSwipingState = localStorage.getItem('swipingState');
+      const savedLikedFoods = localStorage.getItem('likedFoods');
+      if (savedSwipingState) {
+        const parsedState = JSON.parse(savedSwipingState);
+        const likedFoodsArray = savedLikedFoods ? JSON.parse(savedLikedFoods) : [];
+        const dislikedFoodsArray = parsedState.dislikedFoods || [];
+        const totalSwipes = likedFoodsArray.length + dislikedFoodsArray.length;
+        
+        // Only set to true if we have actual swipe data AND all swipes are complete
+        if (parsedState.allSwipesComplete && totalSwipes > 0 && parsedState.currentIndex >= (parsedState.totalFoodsAvailable || 0)) {
+          setInitialSwipingComplete(true);
+        } else {
+          // Reset if data is inconsistent
+          localStorage.setItem('initialSwipingComplete', 'false');
+        }
+      } else {
+        // Reset if no swiping state exists
+        localStorage.setItem('initialSwipingComplete', 'false');
+      }
     }
   }, []);
 
@@ -104,6 +131,11 @@ function App() {
       localStorage.setItem('caloricMaintenance', caloricMaintenance.toString());
     }
   }, [caloricMaintenance]);
+
+  // Save initial swiping complete status to localStorage
+  useEffect(() => {
+    localStorage.setItem('initialSwipingComplete', initialSwipingComplete.toString());
+  }, [initialSwipingComplete]);
 
   const handlePreferencesChange = (newPreferences) => {
     setPreferences(newPreferences);
@@ -161,7 +193,15 @@ function App() {
   const signalsFromDislikes = swipingState?.dislikedFoods?.length || 0;
   const swipesRecorded = likedFoods.length + signalsFromDislikes;
   const hasTasteProfile = swipesRecorded >= MIN_BASELINE_SWIPES;
-  const isImmersiveSwiping = activeTab === 'swiping' && !hasTasteProfile;
+  const hasDiningHalls = Array.isArray(preferences?.diningHall) 
+    ? preferences.diningHall.length > 0
+    : (preferences?.diningHall ? true : false);
+  const shouldShowOnboarding = !preferences || !userInfo?.name || !hasDiningHalls;
+  // Show initial swiping session if onboarding is done but initial swiping is not complete
+  // Also show if no swipes have been recorded yet (safety check)
+  const showInitialSwiping = !shouldShowOnboarding && (!initialSwipingComplete || swipesRecorded === 0);
+  // Check if all swipes are complete (either from initial session or current state)
+  const allSwipesComplete = initialSwipingComplete || swipingState?.allSwipesComplete || false;
 
   const handleTabSelect = (tabId) => {
     setActiveTab(tabId);
@@ -181,8 +221,9 @@ function App() {
             onSwipingStateChange={setSwipingState}
             caloricMaintenance={caloricMaintenance}
             onCaloricMaintenanceChange={setCaloricMaintenance}
-            experienceMode={isImmersiveSwiping ? 'onboarding' : 'dashboard'}
+            experienceMode="dashboard"
             onboardingTarget={MIN_BASELINE_SWIPES}
+            onAllSwipesComplete={undefined}
           />
         );
       case 'metrics':
@@ -222,10 +263,13 @@ function App() {
     }
   };
 
-  const shouldShowOnboarding = !preferences || !userInfo?.name || !preferences?.diningHall;
   const handleOnboardingComplete = ({ preferences: newPreferences, userInfo: newUserInfo }) => {
     setPreferences(newPreferences);
     setUserInfo(newUserInfo);
+  };
+
+  const handleInitialSwipingComplete = () => {
+    setInitialSwipingComplete(true);
   };
 
   if (shouldShowOnboarding) {
@@ -236,8 +280,34 @@ function App() {
     );
   }
 
+  // Show initial swiping session after onboarding but before home page
+  // Only show if we haven't completed initial swiping yet
+  if (showInitialSwiping) {
+    return (
+      <div className="app-onboarding-root">
+        <SwipingPage
+          preferences={preferences}
+          onPreferencesChange={handlePreferencesChange}
+          userInfo={userInfo}
+          onUserInfoChange={handleUserInfoChange}
+          onLikedFoodsChange={setLikedFoods}
+          swipingState={swipingState}
+          onSwipingStateChange={setSwipingState}
+          caloricMaintenance={caloricMaintenance}
+          onCaloricMaintenanceChange={setCaloricMaintenance}
+          experienceMode="onboarding"
+          onboardingTarget={MIN_BASELINE_SWIPES}
+          onAllSwipesComplete={handleInitialSwipingComplete}
+        />
+      </div>
+    );
+  }
+
+  // If initial swiping is complete, show home page with tabs
+  // The swiping tab will show the normal swiping interface
+
   return (
-    <div className={`app ${isImmersiveSwiping ? 'app-onboarding' : ''}`}>
+    <div className="app">
       <header className="app-top-bar">
         <div className="app-brand">
           <span className="brand-title">MealSwipeRight</span>
@@ -256,7 +326,7 @@ function App() {
       </header>
 
       <div className="app-core">
-        {!isImmersiveSwiping && (
+        {allSwipesComplete && (
           <MacroSidebar
             likedFoods={likedFoods}
             caloricMaintenance={caloricMaintenance}
@@ -267,9 +337,7 @@ function App() {
         </div>
       </div>
 
-      {!isImmersiveSwiping && (
-        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-      )}
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
