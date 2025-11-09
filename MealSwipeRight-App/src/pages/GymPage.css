@@ -33,10 +33,14 @@
 
 .gym-hero-stat {
   flex: 1 1 140px;
+  min-width: 140px;
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border-soft);
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .gym-content {
