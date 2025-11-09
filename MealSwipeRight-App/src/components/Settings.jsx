@@ -13,6 +13,7 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
   });
 
   const [localUserInfo, setLocalUserInfo] = useState(userInfo || {
+    name: '',
     weight: '',
     height: '',
     sex: '',
@@ -118,20 +119,29 @@ function Settings({ isOpen, onClose, preferences, onPreferencesChange, userInfo,
             <h3>User Information</h3>
             <div className="user-info-form">
               <div className="form-group">
-                <label>Weight (lbs)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={localUserInfo.weight}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '' || parseFloat(val) >= 0) {
-                      handleUserInfoChange('weight', val);
-                    }
-                  }}
-                  placeholder="Enter weight"
-                />
-              </div>
+              <label>Name</label>
+              <input
+                type="text"
+                value={localUserInfo.name}
+                onChange={(e) => handleUserInfoChange('name', e.target.value)}
+                placeholder="First & Last"
+              />
+            </div>
+            <div className="form-group">
+              <label>Weight (lbs)</label>
+              <input
+                type="number"
+                min="0"
+                value={localUserInfo.weight}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '' || parseFloat(val) >= 0) {
+                    handleUserInfoChange('weight', val);
+                  }
+                }}
+                placeholder="Enter weight"
+              />
+            </div>
               <div className="form-group">
                 <label>Height (inches)</label>
                 <input

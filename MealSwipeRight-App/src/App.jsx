@@ -5,6 +5,7 @@ import SwipingPage from './pages/SwipingPage';
 import MetricsPage from './pages/MetricsPage';
 import GymPage from './pages/GymPage';
 import ChatbotPage from './pages/ChatbotPage';
+import OnboardingFlow from './components/OnboardingFlow';
 import './App.css';
 
 const MIN_BASELINE_SWIPES = 6;
@@ -19,6 +20,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('swiping');
   const [preferences, setPreferences] = useState(null);
   const [userInfo, setUserInfo] = useState({
+    name: '',
     weight: '',
     height: '',
     sex: '',
@@ -220,12 +222,25 @@ function App() {
     }
   };
 
+  const shouldShowOnboarding = !preferences || !userInfo?.name || !preferences?.diningHall;
+  const handleOnboardingComplete = ({ preferences: newPreferences, userInfo: newUserInfo }) => {
+    setPreferences(newPreferences);
+    setUserInfo(newUserInfo);
+  };
+
+  if (shouldShowOnboarding) {
+    return (
+      <div className="app-onboarding-root">
+        <OnboardingFlow onComplete={handleOnboardingComplete} />
+      </div>
+    );
+  }
+
   return (
     <div className={`app ${isImmersiveSwiping ? 'app-onboarding' : ''}`}>
       <header className="app-top-bar">
         <div className="app-brand">
           <span className="brand-title">MealSwipeRight</span>
-          <span className="brand-chip">glass</span>
         </div>
         <nav className="app-tabs">
           {tabs.map((tab) => (
