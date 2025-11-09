@@ -121,8 +121,11 @@ function CaloricMaintenance({
             className="set-button"
             onClick={() => {
               const calories = parseInt(manualCalories);
-              if (!isNaN(calories) && calories > 0) {
+              // Validate reasonable range (1000-10000 calories)
+              if (!isNaN(calories) && calories >= 1000 && calories <= 10000) {
                 handleSetCalories(calories);
+              } else {
+                alert('Please enter a valid caloric maintenance between 1000 and 10000 calories.');
               }
             }}
             disabled={!manualCalories || isNaN(parseInt(manualCalories)) || parseInt(manualCalories) <= 0}

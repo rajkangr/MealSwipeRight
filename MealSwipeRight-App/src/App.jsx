@@ -6,6 +6,7 @@ import MetricsPage from './pages/MetricsPage';
 import GymPage from './pages/GymPage';
 import ChatbotPage from './pages/ChatbotPage';
 import OnboardingFlow from './components/OnboardingFlow';
+import { calculateCaloricMaintenance } from './utils/calorieCalculator';
 import './App.css';
 
 const MIN_BASELINE_SWIPES = 6;
@@ -42,6 +43,7 @@ function App() {
   });
   const [caloricMaintenance, setCaloricMaintenance] = useState(null);
   const [initialSwipingComplete, setInitialSwipingComplete] = useState(false);
+  const [consumedFoods, setConsumedFoods] = useState([]);
 
   // Load preferences from localStorage on mount
   useEffect(() => {
@@ -52,6 +54,7 @@ function App() {
     const savedGymData = localStorage.getItem('gymData');
     const savedCaloricMaintenance = localStorage.getItem('caloricMaintenance');
     const savedInitialSwipingComplete = localStorage.getItem('initialSwipingComplete');
+    const savedConsumedFoods = localStorage.getItem('consumedFoods');
 
     if (savedPreferences) {
       setPreferences(JSON.parse(savedPreferences));
@@ -69,7 +72,17 @@ function App() {
       setGymData(JSON.parse(savedGymData));
     }
     if (savedCaloricMaintenance) {
-      setCaloricMaintenance(parseInt(savedCaloricMaintenance));
+      const parsed = parseInt(savedCaloricMaintenance);
+      // Validate that it's a reasonable number (between 1000 and 10000)
+      if (!isNaN(parsed) && parsed >= 1000 && parsed <= 10000) {
+        setCaloricMaintenance(parsed);
+      } else {
+        // Clear invalid value
+        localStorage.removeItem('caloricMaintenance');
+      }
+    }
+    if (savedConsumedFoods) {
+      setConsumedFoods(JSON.parse(savedConsumedFoods));
     }
     // Only restore initialSwipingComplete if we actually have swipes recorded
     // This prevents the issue where it's set to true but user hasn't actually swiped
@@ -137,6 +150,36 @@ function App() {
     localStorage.setItem('initialSwipingComplete', initialSwipingComplete.toString());
   }, [initialSwipingComplete]);
 
+  // Save consumed foods to localStorage
+  useEffect(() => {
+    localStorage.setItem('consumedFoods', JSON.stringify(consumedFoods));
+  }, [consumedFoods]);
+
+  // Auto-calculate caloric maintenance when user info and preferences are available
+  useEffect(() => {
+    if (!caloricMaintenance && userInfo && preferences) {
+      const weight = parseFloat(userInfo.weight);
+      const height = parseFloat(userInfo.height);
+      const age = parseInt(userInfo.age);
+      const sex = userInfo.sex;
+      const activityLevel = preferences.activityLevel;
+
+      // Check if all required data is available
+      if (
+        !isNaN(weight) && weight > 0 &&
+        !isNaN(height) && height > 0 &&
+        !isNaN(age) && age > 0 &&
+        sex &&
+        activityLevel
+      ) {
+        const calculated = calculateCaloricMaintenance(weight, height, age, sex, activityLevel);
+        if (calculated >= 1000 && calculated <= 10000) {
+          setCaloricMaintenance(calculated);
+        }
+      }
+    }
+  }, [userInfo, preferences, caloricMaintenance]);
+
   const handlePreferencesChange = (newPreferences) => {
     setPreferences(newPreferences);
   };
@@ -198,8 +241,8 @@ function App() {
     : (preferences?.diningHall ? true : false);
   const shouldShowOnboarding = !preferences || !userInfo?.name || !hasDiningHalls;
   // Show initial swiping session if onboarding is done but initial swiping is not complete
-  // Also show if no swipes have been recorded yet (safety check)
-  const showInitialSwiping = !shouldShowOnboarding && (!initialSwipingComplete || swipesRecorded === 0);
+  // Only check initialSwipingComplete flag, not swipesRecorded (that changes as user swipes)
+  const showInitialSwiping = !shouldShowOnboarding && !initialSwipingComplete;
   // Check if all swipes are complete (either from initial session or current state)
   const allSwipesComplete = initialSwipingComplete || swipingState?.allSwipesComplete || false;
 
@@ -224,13 +267,17 @@ function App() {
             experienceMode="dashboard"
             onboardingTarget={MIN_BASELINE_SWIPES}
             onAllSwipesComplete={undefined}
+            consumedFoods={consumedFoods}
+            onConsumedFoodsChange={setConsumedFoods}
           />
         );
       case 'metrics':
         return (
           <MetricsPage
-            likedFoods={likedFoods}
+            consumedFoods={consumedFoods}
+            caloricMaintenance={caloricMaintenance}
             gymData={gymData}
+            userInfo={userInfo}
           />
         );
       case 'gym':
@@ -328,8 +375,10 @@ function App() {
       <div className="app-core">
         {allSwipesComplete && (
           <MacroSidebar
-            likedFoods={likedFoods}
+            consumedFoods={consumedFoods}
             caloricMaintenance={caloricMaintenance}
+            preferences={preferences}
+            userInfo={userInfo}
           />
         )}
         <div className="app-main-content">

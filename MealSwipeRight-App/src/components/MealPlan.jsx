@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import './MealPlan.css';
 
-function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
+function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences, consumedFoods = [], onConsumedFoodsChange }) {
   const [mealPlan, setMealPlan] = useState(null);
   const [targetMacros, setTargetMacros] = useState(null);
+  const [showCustomFoodModal, setShowCustomFoodModal] = useState(false);
+  const [customFood, setCustomFood] = useState({
+    name: '',
+    calories: '',
+    protein: '',
+    carbs: '',
+    fat: ''
+  });
 
   // Calculate target macros (standard distribution: 40% carbs, 30% protein, 30% fat)
   useEffect(() => {
@@ -27,46 +35,6 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
 
   // Helper function to generate meal plan
   const generateMealPlan = useCallback((targets, liked, foods, prefs) => {
-    // Filter foods based on preferences
-    let availableFoods = [...foods];
-
-    if (prefs?.diningHall) {
-      availableFoods = availableFoods.filter(f => f.location === prefs.diningHall);
-    }
-
-    if (prefs?.isVegetarian || prefs?.isVegan) {
-      availableFoods = availableFoods.filter(f => {
-        const dietTypes = (f.diet_types || '').toLowerCase();
-        return dietTypes.includes('vegetarian') || dietTypes.includes('vegan');
-      });
-    }
-
-    if (prefs?.isGlutenFree) {
-      availableFoods = availableFoods.filter(f => {
-        const dietTypes = (f.diet_types || '').toLowerCase();
-        return dietTypes.includes('gluten free');
-      });
-    }
-
-    if (prefs?.isDairyFree) {
-      availableFoods = availableFoods.filter(f => {
-        const allergens = (f.allergens || '').toLowerCase();
-        return !allergens.includes('milk') && !allergens.includes('dairy');
-      });
-    }
-
-    if (prefs?.isKeto) {
-      availableFoods = availableFoods.filter(f => {
-        const dietTypes = (f.diet_types || '').toLowerCase();
-        return dietTypes.includes('keto');
-      });
-    }
-
-    // Prioritize liked foods
-    const likedFoodsList = availableFoods.filter(f => 
-      liked.some(lf => lf.name === f.name && lf.location === f.location)
-    );
-
     // Helper function to parse nutrition values
     const parseNutrition = (value) => {
       if (!value || value === '' || value === 'N/A') return 0;
@@ -74,22 +42,61 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
       return isNaN(num) ? 0 : num;
     };
 
-    // Helper function to get calories from a food
-    const getCalories = (food) => {
-      return parseNutrition(food.calories);
-    };
-
     // Helper function to get macros from a food
     const getMacros = (food) => {
       return {
-        calories: getCalories(food),
+        calories: parseNutrition(food.calories),
         carbs: parseNutrition(food.total_carb_g),
         protein: parseNutrition(food.protein_g),
         fat: parseNutrition(food.total_fat_g)
       };
     };
 
-    // Greedy algorithm to select foods - aim for target calories
+    // ONLY use liked foods - filter to match liked foods from allFoods
+    let likedFoodsList = [];
+    
+    // Match liked foods with foods from allFoods by name and location
+    for (const likedFood of liked) {
+      const matched = foods.find(f => 
+        f.name === likedFood.name && f.location === likedFood.location
+      );
+      if (matched) {
+        likedFoodsList.push(matched);
+      }
+    }
+
+    // If no liked foods match, return empty plan
+    if (likedFoodsList.length === 0) {
+      return {
+        foods: [],
+        totals: { calories: 0, carbs: 0, protein: 0, fat: 0 },
+        targets: targets
+      };
+    }
+
+    // Sort liked foods by priority: calories first, then protein
+    // We want foods that help us reach calorie target while maximizing protein
+    likedFoodsList.sort((a, b) => {
+      const aMacros = getMacros(a);
+      const bMacros = getMacros(b);
+      
+      // Primary: prioritize high protein
+      if (Math.abs(bMacros.protein - aMacros.protein) > 5) {
+        return bMacros.protein - aMacros.protein;
+      }
+      
+      // Secondary: prioritize calories that help reach target
+      // Prefer foods with moderate calories (not too high, not too low)
+      const targetCal = targets.calories;
+      const idealCalPerFood = targetCal / 4; // Aim for ~4-5 foods per day
+      
+      const aCalScore = Math.abs(aMacros.calories - idealCalPerFood);
+      const bCalScore = Math.abs(bMacros.calories - idealCalPerFood);
+      
+      return aCalScore - bCalScore;
+    });
+
+    // Greedy algorithm: select foods to match target calories and protein
     const selectedFoods = [];
     const foodCounts = new Map(); // Track how many times each food is added
     let currentCalories = 0;
@@ -98,15 +105,16 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
     let currentFat = 0;
 
     const targetCalories = targets.calories;
-    const minCalories = targetCalories - 400; // Within 400 calories below target
-    const maxCalories = targetCalories + 100; // Allow up to 100 calories above target
+    const targetProtein = targets.protein;
+    const minCalories = targetCalories - 300; // Within 300 calories below target
+    const maxCalories = targetCalories + 200; // Allow up to 200 calories above target
 
     // Helper to add a food to the meal plan
-    const addFood = (food, mealType) => {
+    const addFood = (food) => {
       const macros = getMacros(food);
       const foodKey = `${food.name}-${food.location}`;
       
-      selectedFoods.push({ ...food, mealType });
+      selectedFoods.push({ ...food, mealType: 'liked' });
       currentCalories += macros.calories;
       currentCarbs += macros.carbs;
       currentProtein += macros.protein;
@@ -118,82 +126,63 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
 
     // Helper to check if we should stop adding foods
     const shouldStop = () => {
-      return currentCalories >= minCalories && currentCalories <= maxCalories;
+      // Stop if we're within calorie range AND have good protein
+      const caloriesGood = currentCalories >= minCalories && currentCalories <= maxCalories;
+      const proteinGood = currentProtein >= targetProtein * 0.8; // At least 80% of protein target
+      return caloriesGood && proteinGood;
     };
 
-    // First, add liked foods one by one until we're close to target
+    // First pass: add foods prioritizing protein and calories
     for (const food of likedFoodsList) {
       if (shouldStop()) break;
       
       const macros = getMacros(food);
       const newCalories = currentCalories + macros.calories;
       
-      // Only add if it doesn't exceed max by too much
-      if (newCalories <= maxCalories + 50) {
-        addFood(food, 'liked');
+      // Add if it doesn't exceed max calories
+      if (newCalories <= maxCalories) {
+        addFood(food);
       }
     }
 
-    // If we still need more calories, add from all available foods (unique foods only)
-    const remainingFoods = availableFoods.filter(f => {
-      const foodKey = `${f.name}-${f.location}`;
-      return !foodCounts.has(foodKey); // Only foods we haven't added yet
-    });
-
-    // Sort foods by protein content (descending) to prioritize high-protein foods
-    remainingFoods.sort((a, b) => {
-      const aProtein = parseNutrition(a.protein_g);
-      const bProtein = parseNutrition(b.protein_g);
-      return bProtein - aProtein;
-    });
-
-    // Add unique foods until we're close to target
-    for (const food of remainingFoods) {
-      if (shouldStop()) break;
-
-      const macros = getMacros(food);
-      const newCalories = currentCalories + macros.calories;
-      
-      // Add food if it helps us get closer to target without exceeding too much
-      if (newCalories <= maxCalories + 50) {
-        addFood(food, 'recommended');
-      }
-    }
-
-    // If we're still below the minimum (more than 400 calories away), add duplicates
-    if (currentCalories < minCalories && availableFoods.length > 0) {
-      // Create a combined list of all foods (liked first, then others)
-      const allFoodsCombined = [...likedFoodsList, ...remainingFoods];
-      
-      // Sort by how well they help us reach the target
-      allFoodsCombined.sort((a, b) => {
+    // Second pass: if we're still below minimum calories, add more foods (including duplicates)
+    if (currentCalories < minCalories) {
+      // Sort by how well they help us reach targets (calories first, then protein)
+      const sortedFoods = [...likedFoodsList].sort((a, b) => {
         const aMacros = getMacros(a);
         const bMacros = getMacros(b);
-        const aRemaining = targetCalories - currentCalories;
-        const bRemaining = targetCalories - currentCalories;
         
-        // Prefer foods that get us closer to target
-        const aScore = Math.abs(aRemaining - aMacros.calories);
-        const bScore = Math.abs(bRemaining - bMacros.calories);
-        return aScore - bScore;
+        // Calculate how much each food helps us reach targets
+        const calRemaining = targetCalories - currentCalories;
+        const protRemaining = targetProtein - currentProtein;
+        
+        // Score: how well does this food fill remaining needs?
+        const aCalScore = Math.min(aMacros.calories, calRemaining) / calRemaining;
+        const aProtScore = Math.min(aMacros.protein, protRemaining) / Math.max(protRemaining, 1);
+        const aScore = aCalScore * 0.6 + aProtScore * 0.4; // 60% calories, 40% protein
+        
+        const bCalScore = Math.min(bMacros.calories, calRemaining) / calRemaining;
+        const bProtScore = Math.min(bMacros.protein, protRemaining) / Math.max(protRemaining, 1);
+        const bScore = bCalScore * 0.6 + bProtScore * 0.4;
+        
+        return bScore - aScore;
       });
 
-      // Add duplicates until we're within range
       let attempts = 0;
-      const maxAttempts = 100; // Prevent infinite loops
+      const maxAttempts = 200;
       
       while (currentCalories < minCalories && attempts < maxAttempts) {
         let added = false;
         
-        for (const food of allFoodsCombined) {
+        for (const food of sortedFoods) {
           if (shouldStop()) break;
           
           const macros = getMacros(food);
           const newCalories = currentCalories + macros.calories;
           
-          // Add duplicate if it helps us get closer to target
-          if (newCalories <= maxCalories + 100) {
-            addFood(food, foodCounts.has(`${food.name}-${food.location}`) ? 'recommended' : 'liked');
+          // Add if it helps us get closer to target
+          if (newCalories <= maxCalories) {
+            addFood(food);
             added = true;
             break;
           }
@@ -201,15 +190,6 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
         
         if (!added) break; // Can't add any more foods
         attempts++;
-      }
-    }
-
-    // If we still have no foods, add at least a few
-    if (selectedFoods.length === 0 && availableFoods.length > 0) {
-      const foodsToAdd = availableFoods.slice(0, Math.min(5, availableFoods.length));
-      for (const food of foodsToAdd) {
-        addFood(food, 'recommended');
-        if (currentCalories >= targetCalories * 0.5) break; // At least get to 50% of target
       }
     }
 
@@ -243,11 +223,6 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
 
   return (
     <div className="meal-plan-section">
-      <h2>Your Personalized Meal Plan</h2>
-      <p className="plan-description">
-        Based on your daily caloric maintenance of <strong>{caloricMaintenance} calories</strong>
-      </p>
-
       <div className="macros-summary">
         <div className="macro-target">
           <h3>Target Macros</h3>
@@ -303,7 +278,18 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
       </div>
 
       <div className="meal-plan-foods">
-        <h3>Recommended Foods ({mealPlan.foods.length} items)</h3>
+        <div className="meal-plan-foods-header">
+          <h3>Recommended Foods ({mealPlan.foods.length} items)</h3>
+          {onConsumedFoodsChange && (
+            <button
+              className="add-custom-food-button"
+              onClick={() => setShowCustomFoodModal(true)}
+              title="Add custom food"
+            >
+              +
+            </button>
+          )}
+        </div>
         <div className="foods-list">
           {(() => {
             // Group foods by name and location to show counts
@@ -342,11 +328,49 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
 
             return Array.from(foodGroups.values()).map((group, index) => {
               const { food, count, totalCalories, totalCarbs, totalProtein, totalFat } = group;
+              const foodKey = `${food.name}-${food.location}`;
+              const consumedCount = consumedFoods.filter(cf => `${cf.name}-${cf.location}` === foodKey).length;
+              const isFullyConsumed = consumedCount >= count;
+              
+              const handleToggleConsumed = () => {
+                if (!onConsumedFoodsChange) return;
+                
+                if (isFullyConsumed) {
+                  // Remove all instances from consumed foods
+                  const updated = consumedFoods.filter(cf => `${cf.name}-${cf.location}` !== foodKey);
+                  onConsumedFoodsChange(updated);
+                } else {
+                  // Add remaining instances to consumed foods
+                  const remaining = count - consumedCount;
+                  const toAdd = Array(remaining).fill(null).map(() => ({ ...food }));
+                  onConsumedFoodsChange([...consumedFoods, ...toAdd]);
+                }
+              };
+              
               return (
-                <div key={index} className={`food-item ${food.mealType === 'liked' ? 'liked-food' : 'recommended-food'}`}>
+                <div key={index} className={`food-item ${food.mealType === 'liked' ? 'liked-food' : 'recommended-food'} ${isFullyConsumed ? 'consumed' : ''}`}>
                   <div className="food-item-header">
                     <h4>{food.name} {count > 1 && <span className="count-badge">×{count}</span>}</h4>
-                    {food.mealType === 'liked' && <span className="liked-badge">Liked</span>}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      {food.mealType === 'liked' && <span className="liked-badge">Liked</span>}
+                      {onConsumedFoodsChange && (
+                        <button
+                          className={`consume-button ${isFullyConsumed ? 'consumed' : ''}`}
+                          onClick={handleToggleConsumed}
+                          title={isFullyConsumed ? 'Remove from daily intake' : 'Add to daily intake'}
+                        >
+                          {isFullyConsumed ? '✓ Added' : consumedCount > 0 ? `${consumedCount}/${count} Added` : 'Add'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="food-item-meta">
+                    {food.location && (
+                      <span className="food-location">📍 {food.location}</span>
+                    )}
+                    {food.meal_type && food.meal_type !== 'unknown' && (
+                      <span className="food-meal-type">🍽️ {food.meal_type.charAt(0).toUpperCase() + food.meal_type.slice(1)}</span>
+                    )}
                   </div>
                   <div className="food-item-nutrition">
                     <span>Calories: {Math.round(totalCalories)} {count > 1 && `(${Math.round(totalCalories / count)} each)`}</span>
@@ -354,15 +378,107 @@ function MealPlan({ caloricMaintenance, likedFoods, allFoods, preferences }) {
                     <span>Carbs: {Math.round(totalCarbs)}g {count > 1 && `(${Math.round(totalCarbs / count)}g each)`}</span>
                     <span>Fat: {Math.round(totalFat)}g {count > 1 && `(${Math.round(totalFat / count)}g each)`}</span>
                   </div>
-                  {food.meal_type && food.meal_type !== 'unknown' && (
-                    <div className="food-item-type">Meal Type: {food.meal_type}</div>
-                  )}
                 </div>
               );
             });
           })()}
         </div>
       </div>
+
+      {/* Custom Food Modal */}
+      {showCustomFoodModal && (
+        <div className="custom-food-modal-overlay" onClick={() => setShowCustomFoodModal(false)}>
+          <div className="custom-food-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="custom-food-modal-header">
+              <h3>Add Custom Food</h3>
+              <button className="close-button" onClick={() => setShowCustomFoodModal(false)}>×</button>
+            </div>
+            <div className="custom-food-modal-content">
+              <div className="custom-food-field">
+                <label>Food Name *</label>
+                <input
+                  type="text"
+                  value={customFood.name}
+                  onChange={(e) => setCustomFood({ ...customFood, name: e.target.value })}
+                  placeholder="e.g., Grilled Chicken Breast"
+                />
+              </div>
+              <div className="custom-food-field">
+                <label>Calories *</label>
+                <input
+                  type="number"
+                  value={customFood.calories}
+                  onChange={(e) => setCustomFood({ ...customFood, calories: e.target.value })}
+                  placeholder="e.g., 200"
+                  min="0"
+                />
+              </div>
+              <div className="custom-food-field">
+                <label>Protein (g)</label>
+                <input
+                  type="number"
+                  value={customFood.protein}
+                  onChange={(e) => setCustomFood({ ...customFood, protein: e.target.value })}
+                  placeholder="e.g., 30"
+                  min="0"
+                />
+              </div>
+              <div className="custom-food-field">
+                <label>Carbs (g)</label>
+                <input
+                  type="number"
+                  value={customFood.carbs}
+                  onChange={(e) => setCustomFood({ ...customFood, carbs: e.target.value })}
+                  placeholder="e.g., 0"
+                  min="0"
+                />
+              </div>
+              <div className="custom-food-field">
+                <label>Fat (g)</label>
+                <input
+                  type="number"
+                  value={customFood.fat}
+                  onChange={(e) => setCustomFood({ ...customFood, fat: e.target.value })}
+                  placeholder="e.g., 5"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div className="custom-food-modal-actions">
+              <button
+                className="cancel-button"
+                onClick={() => {
+                  setShowCustomFoodModal(false);
+                  setCustomFood({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="add-button"
+                onClick={() => {
+                  if (customFood.name && customFood.calories) {
+                    const newFood = {
+                      name: customFood.name,
+                      calories: parseFloat(customFood.calories) || 0,
+                      protein_g: parseFloat(customFood.protein) || 0,
+                      total_carb_g: parseFloat(customFood.carbs) || 0,
+                      total_fat_g: parseFloat(customFood.fat) || 0,
+                      location: 'Custom'
+                    };
+                    onConsumedFoodsChange([...consumedFoods, newFood]);
+                    setShowCustomFoodModal(false);
+                    setCustomFood({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+                  }
+                }}
+                disabled={!customFood.name || !customFood.calories}
+              >
+                Add Food
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

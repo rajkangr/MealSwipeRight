@@ -1,166 +1,267 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import './MetricsPage.css';
 
-function MetricsPage({ likedFoods, gymData }) {
-  const [totalCalories, setTotalCalories] = useState(0);
-  const [recentLikedFoods, setRecentLikedFoods] = useState([]);
+function MetricsPage({ consumedFoods, caloricMaintenance, gymData, userInfo }) {
+  // Get recent consumed foods (last 5)
+  const recentFoods = useMemo(() => {
+    return consumedFoods.slice(-5).reverse();
+  }, [consumedFoods]);
 
-  useEffect(() => {
-    // Calculate total calories from liked foods
-    const calories = likedFoods.reduce((sum, food) => {
-      const cal = parseInt(food.calories) || 0;
-      return sum + cal;
-    }, 0);
-    setTotalCalories(calories);
+  // Calculate workout stats from actual data
+  const workoutStats = useMemo(() => {
+    const workouts = gymData?.workouts || [];
+    const benchPress = gymData?.benchPress || [];
+    const squat = gymData?.squat || [];
+    
+    const getMaxWeight = (data) => {
+      if (!data || data.length === 0) return 0;
+      return Math.max(...data.map(e => e.weight));
+    };
 
-    // Get recent liked foods (last 5)
-    setRecentLikedFoods(likedFoods.slice(-5).reverse());
-  }, [likedFoods]);
+    const getRecentMax = (data) => {
+      if (!data || data.length === 0) return 0;
+      const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+      return sorted[0]?.weight || 0;
+    };
 
-  // Sample gym data - in production this would come from gym workouts
-  const sampleGymStats = gymData || {
-    benchPress: [
-      { date: '2024-01-01', weight: 135, reps: 10 },
-      { date: '2024-01-08', weight: 145, reps: 10 },
-      { date: '2024-01-15', weight: 155, reps: 8 },
-      { date: '2024-01-22', weight: 165, reps: 6 }
-    ],
-    squat: [
-      { date: '2024-01-01', weight: 185, reps: 10 },
-      { date: '2024-01-08', weight: 195, reps: 10 },
-      { date: '2024-01-15', weight: 205, reps: 8 },
-      { date: '2024-01-22', weight: 215, reps: 6 }
-    ]
+    // Get unique workout dates
+    const workoutDates = [...new Set(workouts.map(w => {
+      const date = new Date(w.date);
+      return date.toDateString();
+    }))];
+
+    // Calculate workout streak
+    const today = new Date().toDateString();
+    const sortedDates = workoutDates.sort((a, b) => new Date(b) - new Date(a));
+    let workoutStreak = 0;
+    
+    if (sortedDates.includes(today)) {
+      workoutStreak = 1;
+      let checkDate = new Date();
+      checkDate.setDate(checkDate.getDate() - 1);
+      
+      while (sortedDates.includes(checkDate.toDateString())) {
+        workoutStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+    }
+
+    // Calculate nutrition streak (simplified - based on today having food)
+    const nutritionStreak = consumedFoods.length > 0 ? 1 : 0;
+    // For a real streak, we'd need to track dates when foods were consumed
+    // This is a simplified version that just checks if they logged today
+
+    // Get total workouts this week
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const workoutsThisWeek = workouts.filter(w => {
+      const workoutDate = new Date(w.date);
+      return workoutDate >= weekAgo;
+    }).length;
+
+    // Get total workouts all time
+    const totalWorkouts = workouts.length;
+
+    return {
+      benchPress: {
+        max: getMaxWeight(benchPress),
+        recent: getRecentMax(benchPress),
+        data: benchPress.slice(-7)
+      },
+      squat: {
+        max: getMaxWeight(squat),
+        recent: getRecentMax(squat),
+        data: squat.slice(-7)
+      },
+      workoutStreak,
+      nutritionStreak,
+      workoutsThisWeek,
+      totalWorkouts,
+      recentWorkouts: workouts.slice(-5).reverse()
+    };
+  }, [gymData, consumedFoods]);
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
   };
-
-  const getMaxWeight = (exerciseData) => {
-    if (!exerciseData || exerciseData.length === 0) return 0;
-    return Math.max(...exerciseData.map(e => e.weight));
-  };
-
-  const avgCalories = likedFoods.length ? Math.round(totalCalories / likedFoods.length) : 0;
-  const heroStats = [
-    { label: 'Liked meals: ', value: likedFoods.length },
-    { label: 'Avg calories: ', value: `${avgCalories} kcal` },
-    { label: 'Bench max: ', value: `${getMaxWeight(sampleGymStats.benchPress)} lbs` }
-  ];
 
   return (
     <div className="metrics-page page-shell">
       <header className="metrics-hero">
-        <div className="hero-pill">Daily brief</div>
-        <h1>Performance snapshot</h1>
-        <p>Track how your dining choices and training sessions sync up this week.</p>
-        <div className="metrics-hero-stats">
-          {heroStats.map((stat) => (
-            <div key={stat.label} className="metrics-hero-stat">
-              <span className="stat-label">{stat.label}</span>
-              <span className="stat-value">{stat.value}</span>
-            </div>
-          ))}
-        </div>
+        <div className="hero-pill">Your progress</div>
+        <h1>Metrics</h1>
+        <p>Track your streaks and fitness progress</p>
       </header>
 
-      <div className="metrics-overview-grid">
-        <div className="metric-card glass">
-          <span className="metric-label">Total calories unlocked</span>
-          <div className="metric-value">{totalCalories}</div>
-          <p className="metric-hint">Based on liked foods.</p>
+      {/* Streaks Section */}
+      <section className="metrics-section">
+        <div className="section-header">
+          <p className="panel-eyebrow">Streaks</p>
+          <h2>Keep It Going</h2>
         </div>
-        <div className="metric-card glass">
-          <span className="metric-label">Favorites saved</span>
-          <div className="metric-value">{likedFoods.length}</div>
-          <p className="metric-hint">Curate at least 5 to unlock deeper insights.</p>
-        </div>
-      </div>
-
-      <section className="metric-section glass">
-        <div className="section-heading">
-          <div>
-            <p className="panel-eyebrow">Taste tracker</p>
-            <h2>Recently liked foods</h2>
-          </div>
-        </div>
-        {recentLikedFoods.length > 0 ? (
-          <div className="recent-foods-list">
-            {recentLikedFoods.map((food, index) => (
-              <div key={index} className="recent-food-item">
-                <div>
-                  <div className="food-name">{food.name}</div>
-                  <div className="food-location">{food.location}</div>
-                </div>
-                <div className="food-details">
-                  <span>{food.calories} cal</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">
-            <p>No liked foods yet. Start swiping to see your favorites here!</p>
-          </div>
-        )}
-      </section>
-
-      <section className="metric-section glass">
-        <div className="section-heading">
-          <div>
-            <p className="panel-eyebrow">Training room</p>
-            <h2>Gym stats</h2>
-          </div>
-        </div>
-        <div className="gym-stats-grid">
-          <div className="gym-stat-card">
-            <div className="gym-stat-title">Bench Press</div>
-            <div className="gym-stat-value">{getMaxWeight(sampleGymStats.benchPress)} lbs</div>
-            <div className="gym-stat-label">Max Weight</div>
-            <div className="gym-stat-progress">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${(getMaxWeight(sampleGymStats.benchPress) / 225) * 100}%` }}
-                ></div>
+        <div className="streaks-grid">
+          <div className="streak-card">
+            <div className="streak-icon">🔥</div>
+            <div className="streak-content">
+              <div className="streak-label">Nutrition Streak</div>
+              <div className="streak-value">{workoutStats.nutritionStreak} day{workoutStats.nutritionStreak !== 1 ? 's' : ''}</div>
+              <div className="streak-hint">
+                {workoutStats.nutritionStreak > 0 
+                  ? 'Logged food today!' 
+                  : 'Log food to start your streak'}
               </div>
             </div>
           </div>
-          <div className="gym-stat-card">
-            <div className="gym-stat-title">Squat</div>
-            <div className="gym-stat-value">{getMaxWeight(sampleGymStats.squat)} lbs</div>
-            <div className="gym-stat-label">Max Weight</div>
-            <div className="gym-stat-progress">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${(getMaxWeight(sampleGymStats.squat) / 315) * 100}%` }}
-                ></div>
+
+          <div className="streak-card">
+            <div className="streak-icon">💪</div>
+            <div className="streak-content">
+              <div className="streak-label">Workout Streak</div>
+              <div className="streak-value">{workoutStats.workoutStreak} day{workoutStats.workoutStreak !== 1 ? 's' : ''}</div>
+              <div className="streak-hint">
+                {workoutStats.workoutStreak > 0 
+                  ? 'Keep crushing it!' 
+                  : 'Start a workout to begin your streak'}
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="gym-graph-section">
-          <h3>Bench Press Progress</h3>
-          <div className="simple-graph">
-            {sampleGymStats.benchPress.map((point, index) => (
-              <div key={index} className="graph-bar-container">
-                <div
-                  className="graph-bar"
-                  style={{ height: `${(point.weight / 200) * 100}%` }}
-                  title={`${point.weight}lbs - ${point.reps} reps`}
-                >
-                  <span className="graph-value">{point.weight}</span>
+      {/* Today's Foods */}
+      {recentFoods.length > 0 && (
+        <section className="metrics-section">
+          <div className="section-header">
+            <p className="panel-eyebrow">Recent activity</p>
+            <h2>Today's Foods</h2>
+          </div>
+          <div className="recent-foods-grid">
+            {recentFoods.map((food, index) => (
+              <div key={index} className="recent-food-card">
+                <div className="food-card-header">
+                  <h4>{food.name}</h4>
+                  {food.location && food.location !== 'Custom' && (
+                    <span className="food-location-badge">{food.location}</span>
+                  )}
                 </div>
-                <div className="graph-label">
-                  {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                <div className="food-macros-mini">
+                  <span>{Math.round(parseFloat(food.calories) || 0)} cal</span>
+                  <span>{Math.round(parseFloat(food.protein_g) || 0)}g protein</span>
                 </div>
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Workout Stats */}
+      {workoutStats.totalWorkouts > 0 && (
+        <section className="metrics-section">
+          <div className="section-header">
+            <p className="panel-eyebrow">Fitness</p>
+            <h2>Workout Stats</h2>
+          </div>
+          
+          <div className="workout-overview-grid">
+            <div className="workout-stat-card">
+              <div className="workout-stat-label">Total Workouts</div>
+              <div className="workout-stat-value">{workoutStats.totalWorkouts}</div>
+            </div>
+            <div className="workout-stat-card">
+              <div className="workout-stat-label">This Week</div>
+              <div className="workout-stat-value">{workoutStats.workoutsThisWeek}</div>
+            </div>
+          </div>
+
+          {/* Exercise PRs */}
+          {(workoutStats.benchPress.max > 0 || workoutStats.squat.max > 0) && (
+            <div className="exercise-prs-grid">
+              {workoutStats.benchPress.max > 0 && (
+                <div className="pr-card">
+                  <div className="pr-header">
+                    <span className="pr-exercise">Bench Press</span>
+                    <span className="pr-badge">PR</span>
+                  </div>
+                  <div className="pr-value">{workoutStats.benchPress.max} lbs</div>
+                  <div className="pr-label">Personal Best</div>
+                  {workoutStats.benchPress.data.length > 1 && (
+                    <div className="pr-trend">
+                      {workoutStats.benchPress.recent >= workoutStats.benchPress.max * 0.9 ? (
+                        <span className="trend-up">↑ Trending up</span>
+                      ) : (
+                        <span className="trend-neutral">Maintaining</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {workoutStats.squat.max > 0 && (
+                <div className="pr-card">
+                  <div className="pr-header">
+                    <span className="pr-exercise">Squat</span>
+                    <span className="pr-badge">PR</span>
+                  </div>
+                  <div className="pr-value">{workoutStats.squat.max} lbs</div>
+                  <div className="pr-label">Personal Best</div>
+                  {workoutStats.squat.data.length > 1 && (
+                    <div className="pr-trend">
+                      {workoutStats.squat.recent >= workoutStats.squat.max * 0.9 ? (
+                        <span className="trend-up">↑ Trending up</span>
+                      ) : (
+                        <span className="trend-neutral">Maintaining</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Recent Workouts */}
+          {workoutStats.recentWorkouts.length > 0 && (
+            <div className="recent-workouts-section">
+              <h3>Recent Workouts</h3>
+              <div className="recent-workouts-list">
+                {workoutStats.recentWorkouts.map((workout) => (
+                  <div key={workout.id} className="recent-workout-card">
+                    <div className="workout-card-header">
+                      <h4>{workout.title}</h4>
+                      <span className="workout-date">{formatDate(workout.date)}</span>
+                    </div>
+                    <div className="workout-summary">
+                      <span>{workout.exercises.length} exercises</span>
+                      <span>{workout.exercises.reduce((sum, e) => sum + e.sets.length, 0)} sets</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Empty State */}
+      {consumedFoods.length === 0 && workoutStats.totalWorkouts === 0 && (
+        <div className="empty-state-section">
+          <h3>Start Tracking</h3>
+          <p>Log foods and workouts to see your metrics here.</p>
         </div>
-      </section>
+      )}
     </div>
   );
 }
 
 export default MetricsPage;
-

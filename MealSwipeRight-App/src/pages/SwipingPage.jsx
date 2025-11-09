@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import FoodCard from '../components/FoodCard';
 import Settings from '../components/Settings';
-import CaloricMaintenance from '../components/CaloricMaintenance';
 import MealPlan from '../components/MealPlan';
 import { loadFoodData } from '../utils/foodDataLoader';
+import { findSimilarFoods, findAutoLikeFoods } from '../utils/foodSimilarity';
 import './SwipingPage.css';
 
 function SwipingPage({
@@ -18,7 +18,9 @@ function SwipingPage({
   onCaloricMaintenanceChange,
   experienceMode = 'dashboard',
   onboardingTarget = 5,
-  onAllSwipesComplete
+  onAllSwipesComplete,
+  consumedFoods = [],
+  onConsumedFoodsChange
 }) {
   const [allFoods, setAllFoods] = useState([]);
   const [foods, setFoods] = useState([]);
@@ -51,33 +53,7 @@ function SwipingPage({
     ? `Swipe ${Math.max(targetSwipes - totalSwiped, 0)} more dishes to unlock your personalized dashboard.`
     : `Powered by ${totalSwiped || 'fresh'} swipes from ${diningHallLabel}.`;
   const progressPercent = Math.min(100, Math.round((totalSwiped / targetSwipes) * 100));
-  const highlightFoods = likedFoods.slice(-3).reverse();
-  const calorieTarget = caloricMaintenance || 2200;
-  const macroTotals = useMemo(() => {
-    return likedFoods.reduce(
-      (acc, food) => ({
-        calories: acc.calories + toNumber(food.calories),
-        protein: acc.protein + toNumber(food.protein_g),
-        carbs: acc.carbs + toNumber(food.total_carb_g),
-        fat: acc.fat + toNumber(food.total_fat_g)
-      }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    );
-  }, [likedFoods]);
-  const macroTargets = useMemo(() => ({
-    calories: calorieTarget,
-    protein: Math.round((calorieTarget * 0.3) / 4),
-    carbs: Math.round((calorieTarget * 0.45) / 4),
-    fat: Math.round((calorieTarget * 0.25) / 9)
-  }), [calorieTarget]);
-  const macroPercent = (key) => {
-    const target = macroTargets[key];
-    if (!target) return 0;
-    return Math.min(100, Math.round(((macroTotals[key] || 0) / target) * 100));
-  };
   const remainingFoods = Math.max(foods.length - currentIndex, 0);
-  const showInsights = hasTasteProfile || experienceMode === 'dashboard';
-  const tasteNotes = buildTasteNotes(preferences || {}, likedFoods.length, diningHallLabel, caloricMaintenance);
 
   // Restore state from parent only on initial mount
   useEffect(() => {
@@ -164,7 +140,7 @@ function SwipingPage({
     }
   }, [currentIndex, likedFoods, dislikedFoods, preferences, foods.length, onSwipingStateChange]);
 
-  // Filter foods based on preferences
+  // Filter foods based on preferences and prioritize similar foods
   useEffect(() => {
     const diningHalls = Array.isArray(preferences?.diningHall) 
       ? preferences.diningHall 
@@ -209,8 +185,25 @@ function SwipingPage({
       });
     }
 
+    // Remove foods that are already liked (including auto-liked similar foods)
+    const likedKeys = new Set();
+    likedFoods.forEach(food => {
+      const key = `${food.name}-${food.location}`;
+      likedKeys.add(key);
+    });
+    
+    filtered = filtered.filter(food => {
+      const key = `${food.name}-${food.location}`;
+      return !likedKeys.has(key);
+    });
+
+    // If user has liked foods, prioritize similar foods for remaining items
+    if (likedFoods.length > 0 && filtered.length > 0) {
+      filtered = findSimilarFoods(likedFoods, filtered);
+    }
+
     setFoods(filtered);
-  }, [preferences, allFoods, isLoading]);
+  }, [preferences, allFoods, isLoading, likedFoods]);
 
   // Check if all swipes are complete and notify parent
   useEffect(() => {
@@ -231,17 +224,36 @@ function SwipingPage({
     if (currentIndex >= foods.length) return;
 
     const currentFood = foods[currentIndex];
+    let autoLikeFoods = [];
+    let newIndex = currentIndex + 1;
 
     if (direction === 'right') {
-      const updatedLikedFoods = [...likedFoods, currentFood];
+      // Find similar foods that should be auto-liked (especially same name from different locations)
+      autoLikeFoods = findAutoLikeFoods(currentFood, allFoods, likedFoods);
+      
+      // Add current food and all auto-liked similar foods
+      const updatedLikedFoods = [...likedFoods, currentFood, ...autoLikeFoods];
       setLikedFoods(updatedLikedFoods);
       onLikedFoodsChange?.(updatedLikedFoods);
+      
+      // Skip over auto-liked foods in the queue
+      const autoLikeKeys = new Set(autoLikeFoods.map(f => `${f.name}-${f.location}`));
+      
+      // Skip any foods that were auto-liked
+      while (newIndex < foods.length) {
+        const nextFood = foods[newIndex];
+        const nextFoodKey = `${nextFood.name}-${nextFood.location}`;
+        if (!autoLikeKeys.has(nextFoodKey)) {
+          break;
+        }
+        newIndex++;
+      }
+      
+      setCurrentIndex(newIndex);
     } else {
       setDislikedFoods([...dislikedFoods, currentFood]);
+      setCurrentIndex(newIndex);
     }
-
-    const newIndex = currentIndex + 1;
-    setCurrentIndex(newIndex);
 
     // If this was the last food, trigger smooth transition
     if (newIndex >= foods.length) {
@@ -392,63 +404,27 @@ function SwipingPage({
 
   return (
     <div className={`swiping-page ${showImmersive ? 'swiping-page--immersive' : 'swiping-page--profile-ready'}`}>
-      <div className="swiping-hero">
-        <div className="hero-top-row">
-          <div className="hero-pill">{mealWindow.label} · {mealWindow.time}</div>
-          <button className="settings-bubble" onClick={() => setShowSettings(true)}>
-            Edit Preferences
-          </button>
-        </div>
-        <p className="hero-eyebrow">Hi {userName}</p>
-        <h1>{heroTitle}</h1>
-        <p className="hero-copy">{heroSubtitle}</p>
-        <div className="hero-progress">
-          <div className="hero-progress-track">
-            <div className="hero-progress-fill" style={{ width: `${progressPercent}%` }} />
-          </div>
-          <div className="hero-progress-meta">
-            <span>{totalSwiped}/{targetSwipes} dishes reviewed</span>
-            <span>{hasTasteProfile ? 'Taste profile unlocked' : `${Math.max(targetSwipes - totalSwiped, 0)} more to go`}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="preferences-display">
-        {preferences.isVegetarian && <span className="pref-badge">Vegetarian</span>}
-        {preferences.isVegan && <span className="pref-badge">Vegan</span>}
-        {preferences.isGlutenFree && <span className="pref-badge">Gluten Free</span>}
-        {preferences.isDairyFree && <span className="pref-badge">Dairy Free</span>}
-        {preferences.isKeto && <span className="pref-badge">Keto</span>}
-        {Array.isArray(preferences.diningHall) && preferences.diningHall.length > 0
-          ? preferences.diningHall.map((hall, idx) => (
-              <span key={idx} className="pref-badge">
-                {hall.charAt(0).toUpperCase() + hall.slice(1)}
-              </span>
-            ))
-          : preferences.diningHall && (
-              <span className="pref-badge">{diningHallLabel}</span>
-            )}
-      </div>
-
       <div className="swiping-content">
-        <section className="swipe-panel">
-          <div className="swipe-panel-header">
-            <div>
-              <p className="panel-eyebrow">Swipe & refine</p>
-              <h2>{showImmersive ? 'Teach us your taste' : 'Keep tuning your picks'}</h2>
-              <p className="panel-subtitle">Dining at {diningHallLabel}</p>
+        {/* Only show swipe panel if there are still foods to swipe - appears first */}
+        {currentIndex < foods.length && (
+          <section className="swipe-panel">
+            <div className="swipe-panel-header">
+              <div>
+                <p className="panel-eyebrow">Swipe & refine</p>
+                <h2>{showImmersive ? 'Teach us your taste' : 'Keep tuning your picks'}</h2>
+                <p className="panel-subtitle">Dining at {diningHallLabel}</p>
+              </div>
+              <div className="stats-bar">
+                {stats.map((stat) => (
+                  <span key={stat.label} className={`stat-item ${stat.tone}`}>
+                    <span className="stat-label">{stat.label}</span>
+                    <span className={`stat-value ${stat.tone}`}>{stat.value}</span>
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="stats-bar">
-              {stats.map((stat) => (
-                <span key={stat.label} className={`stat-item ${stat.tone}`}>
-                  <span className="stat-label">{stat.label}</span>
-                  <span className={`stat-value ${stat.tone}`}>{stat.value}</span>
-                </span>
-              ))}
-            </div>
-          </div>
 
-          <div className="swiping-main">
+            <div className="swiping-main">
             {isLoading ? (
               <div className="end-screen glass">
                 <h2>Loading...</h2>
@@ -524,100 +500,67 @@ function SwipingPage({
             )}
           </div>
         </section>
-
-        {showInsights && (
-          <>
-            <section className="insight-grid">
-              <article className="insight-card">
-                <div className="panel-eyebrow">Macro pulse</div>
-                <h3>Today's Intake</h3>
-                <div className="macro-grid">
-                  {['calories', 'protein', 'carbs', 'fat'].map((key) => (
-                    <div key={key} className="macro-pill">
-                      <div className="macro-pill-header">
-                        <span className="macro-label">{key}</span>
-                        <span className="macro-value">
-                          {Math.round(macroTotals[key])}
-                          {key === 'calories' ? ' kcal' : 'g'}
-                        </span>
-                      </div>
-                      <div className="macro-bar">
-                        <div
-                          className="macro-bar-fill"
-                          style={{ width: `${macroPercent(key)}%` }}
-                        />
-                      </div>
-                      <span className="macro-target">
-                        Goal: {macroTargets[key]}
-                        {key === 'calories' ? ' kcal' : 'g'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              <article className="insight-card accent">
-                <div className="panel-eyebrow">Next up</div>
-                <h3>{mealWindow.cta}</h3>
-                <ul className="taste-notes">
-                  {tasteNotes.map((note, index) => (
-                    <li key={index}>{note}</li>
-                  ))}
-                </ul>
-              </article>
-            </section>
-
-            {highlightFoods.length > 0 && (
-              <section className="spotlight-section">
-                <div className="section-heading">
-                  <div>
-                    <p className="panel-eyebrow">Your favorites</p>
-                    <h3>Latest matches</h3>
-                  </div>
-                </div>
-                <div className="spotlight-grid">
-                  {highlightFoods.map((food, index) => (
-                    <article key={`${food.name}-${index}`} className="spotlight-card">
-                      <span className="spotlight-location">{food.location}</span>
-                      <h4>{food.name}</h4>
-                      <div className="spotlight-macros">
-                        <span>{food.calories || '—'} cal</span>
-                        <span>{food.protein_g || '—'}g protein</span>
-                        <span>{food.total_carb_g || '—'}g carbs</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <section className="plan-stack">
-              {!caloricMaintenance && (
-                <div className="plan-card glass">
-                  <CaloricMaintenance
-                    userInfo={userInfo}
-                    preferences={preferences}
-                    onUserInfoChange={onUserInfoChange}
-                    onPreferencesChange={onPreferencesChange}
-                    onCaloricMaintenanceSet={onCaloricMaintenanceChange}
-                    onShowSettings={() => setShowSettings(true)}
-                  />
-                </div>
-              )}
-
-              {caloricMaintenance && (
-                <div className="plan-card glass">
-                  <MealPlan
-                    caloricMaintenance={caloricMaintenance}
-                    likedFoods={likedFoods}
-                    allFoods={allFoods}
-                    preferences={preferences}
-                  />
-                </div>
-              )}
-            </section>
-          </>
         )}
+      </div>
+
+      <div className="swiping-hero">
+        <div className="hero-top-row">
+          <div className="hero-pill">{mealWindow.label} · {mealWindow.time}</div>
+          <button className="settings-bubble" onClick={() => setShowSettings(true)}>
+            Edit Preferences
+          </button>
+        </div>
+        <p className="hero-eyebrow">Hi {userName}</p>
+        <h1>{heroTitle}</h1>
+        <p className="hero-copy">{heroSubtitle}</p>
+        <div className="hero-progress">
+          <div className="hero-progress-track">
+            <div className="hero-progress-fill" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <div className="hero-progress-meta">
+            <span>{totalSwiped}/{targetSwipes} dishes reviewed</span>
+            <span>{hasTasteProfile ? 'Taste profile unlocked' : `${Math.max(targetSwipes - totalSwiped, 0)} more to go`}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="preferences-display">
+        {preferences.isVegetarian && <span className="pref-badge">Vegetarian</span>}
+        {preferences.isVegan && <span className="pref-badge">Vegan</span>}
+        {preferences.isGlutenFree && <span className="pref-badge">Gluten Free</span>}
+        {preferences.isDairyFree && <span className="pref-badge">Dairy Free</span>}
+        {preferences.isKeto && <span className="pref-badge">Keto</span>}
+        {Array.isArray(preferences.diningHall) && preferences.diningHall.length > 0
+          ? preferences.diningHall.map((hall, idx) => (
+              <span key={idx} className="pref-badge">
+                {hall.charAt(0).toUpperCase() + hall.slice(1)}
+              </span>
+            ))
+          : preferences.diningHall && (
+              <span className="pref-badge">{diningHallLabel}</span>
+            )}
+      </div>
+
+      <div className="swiping-content">
+        {/* Next Up Section with Meal Plan */}
+        {experienceMode === 'dashboard' && caloricMaintenance && likedFoods.length > 0 && (
+          <section className="next-up-section">
+            <div className="section-header">
+              <p className="panel-eyebrow">Next up</p>
+              <h2>Your Personalized Meal Plan</h2>
+              <p className="section-subtitle">Based on your daily caloric maintenance of {caloricMaintenance} calories</p>
+            </div>
+            <MealPlan
+              caloricMaintenance={caloricMaintenance}
+              likedFoods={likedFoods}
+              allFoods={allFoods}
+              preferences={preferences}
+              consumedFoods={consumedFoods}
+              onConsumedFoodsChange={onConsumedFoodsChange}
+            />
+          </section>
+        )}
+
       </div>
 
       <Settings

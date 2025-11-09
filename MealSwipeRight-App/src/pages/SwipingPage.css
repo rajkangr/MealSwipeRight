@@ -130,6 +130,40 @@
   gap: clamp(20px, 2vw, 32px);
 }
 
+.next-up-section {
+  background: var(--bg-panel-strong);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-soft);
+  padding: clamp(18px, 3vw, 32px);
+  box-shadow: var(--shadow-elevated);
+  margin-top: 20px;
+}
+
+.next-up-section .section-header {
+  margin-bottom: 24px;
+}
+
+.next-up-section .section-header .panel-eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.next-up-section .section-header h2 {
+  font-size: 1.8rem;
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.next-up-section .section-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
 .swipe-panel {
   background: var(--bg-panel-strong);
   border-radius: var(--radius-lg);

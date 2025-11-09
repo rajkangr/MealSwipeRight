@@ -1,9 +1,67 @@
 import { useMemo } from 'react';
 import './MacroSidebar.css';
 
-function MacroSidebar({ likedFoods, caloricMaintenance }) {
+function MacroSidebar({ consumedFoods, caloricMaintenance, preferences, userInfo }) {
+  // Get meal window CTA based on current time
+  const mealWindowCTA = useMemo(() => {
+    const now = new Date();
+    const hour = now.getHours();
+
+    if (hour < 11) {
+      return 'Lean protein + slow carbs';
+    }
+    if (hour < 15) {
+      return 'Fuel up for the afternoon';
+    }
+    if (hour < 20) {
+      return 'Balance your macros';
+    }
+    return 'Keep it light & satisfying';
+  }, []); // Recalculate every render (time-based)
+
+  // Get dining hall label
+  const diningHallLabel = useMemo(() => {
+    if (!preferences?.diningHall) return 'your dining hall';
+    if (Array.isArray(preferences.diningHall) && preferences.diningHall.length > 0) {
+      return preferences.diningHall.length === 1
+        ? `${preferences.diningHall[0].charAt(0).toUpperCase()}${preferences.diningHall[0].slice(1)}`
+        : `${preferences.diningHall.length} dining halls`;
+    }
+    return preferences.diningHall.charAt(0).toUpperCase() + preferences.diningHall.slice(1);
+  }, [preferences?.diningHall]);
+
+  // Build taste notes - reactive to preferences, likedFoods, and caloricMaintenance
+  const tasteNotes = useMemo(() => {
+    const notes = [];
+
+    if (preferences?.isVegetarian) {
+      notes.push('Prioritizing plant-forward proteins.');
+    } else if (preferences?.isVegan) {
+      notes.push('100% vegan-friendly lineup engaged.');
+    } else {
+      notes.push('Balancing lean proteins with complex carbs.');
+    }
+
+    if (preferences?.isGlutenFree) {
+      notes.push('Gluten-free filter is active across selections.');
+    } else if (preferences?.isDairyFree) {
+      notes.push('Dairy-free swaps suggested for creamy dishes.');
+    } else {
+      notes.push(`Keeping options open inside ${diningHallLabel}.`);
+    }
+
+    if (caloricMaintenance) {
+      notes.push(`Working toward ${caloricMaintenance} kcal today.`);
+    } else {
+      notes.push('Complete your profile to calculate caloric maintenance.');
+    }
+
+    return notes.slice(0, 3);
+  }, [preferences, caloricMaintenance, diningHallLabel]);
+  
+  // Calculate totals from CONSUMED foods, not liked foods
   const totals = useMemo(() => {
-    return likedFoods.reduce(
+    return consumedFoods.reduce(
       (acc, food) => ({
         calories: acc.calories + (parseFloat(food.calories) || 0),
         protein: acc.protein + (parseFloat(food.protein_g) || 0),
@@ -12,7 +70,7 @@ function MacroSidebar({ likedFoods, caloricMaintenance }) {
       }),
       { calories: 0, protein: 0, carbs: 0, fat: 0 }
     );
-  }, [likedFoods]);
+  }, [consumedFoods]);
 
   const targetMacros = useMemo(
     () =>
@@ -123,6 +181,17 @@ function MacroSidebar({ likedFoods, caloricMaintenance }) {
           <p>Set your caloric maintenance to anchor these goals.</p>
         </div>
       )}
+
+      {/* Next Up Section */}
+      <div className="macro-next-up">
+        <div className="panel-eyebrow">Next up</div>
+        <h3>{mealWindowCTA}</h3>
+        <ul className="taste-notes">
+          {tasteNotes.map((note, index) => (
+            <li key={index}>{note}</li>
+          ))}
+        </ul>
+      </div>
     </aside>
   );
 }
