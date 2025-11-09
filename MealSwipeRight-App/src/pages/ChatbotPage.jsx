@@ -29,10 +29,13 @@ function ChatbotPage({
   }, []);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const prevMessagesLengthRef = useRef(messages.length);
 
-  // Auto-scroll to bottom when new messages are added
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > prevMessagesLengthRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   const handleSend = async () => {
