@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import TabNavigation from './components/TabNavigation';
-import NavSidebar from './components/NavSidebar';
 import MacroSidebar from './components/MacroSidebar';
 import SwipingPage from './pages/SwipingPage';
 import MetricsPage from './pages/MetricsPage';
 import GymPage from './pages/GymPage';
 import ChatbotPage from './pages/ChatbotPage';
 import './App.css';
+
+const MIN_BASELINE_SWIPES = 6;
+const tabs = [
+  { id: 'swiping', label: 'Swiping' },
+  { id: 'metrics', label: 'Metrics' },
+  { id: 'gym', label: 'Gym' },
+  { id: 'chatbot', label: 'Chat' }
+];
 
 function App() {
   const [activeTab, setActiveTab] = useState('swiping');
@@ -149,6 +156,15 @@ function App() {
     });
   };
 
+  const signalsFromDislikes = swipingState?.dislikedFoods?.length || 0;
+  const swipesRecorded = likedFoods.length + signalsFromDislikes;
+  const hasTasteProfile = swipesRecorded >= MIN_BASELINE_SWIPES;
+  const isImmersiveSwiping = activeTab === 'swiping' && !hasTasteProfile;
+
+  const handleTabSelect = (tabId) => {
+    setActiveTab(tabId);
+  };
+
   const renderPage = () => {
     switch (activeTab) {
       case 'swiping':
@@ -163,6 +179,8 @@ function App() {
             onSwipingStateChange={setSwipingState}
             caloricMaintenance={caloricMaintenance}
             onCaloricMaintenanceChange={setCaloricMaintenance}
+            experienceMode={isImmersiveSwiping ? 'onboarding' : 'dashboard'}
+            onboardingTarget={MIN_BASELINE_SWIPES}
           />
         );
       case 'metrics':
@@ -203,17 +221,40 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <MacroSidebar 
-        likedFoods={likedFoods} 
-        caloricMaintenance={caloricMaintenance}
-      />
-      <div className="app-main-content">
-        {renderPage()}
+    <div className={`app ${isImmersiveSwiping ? 'app-onboarding' : ''}`}>
+      <header className="app-top-bar">
+        <div className="app-brand">
+          <span className="brand-title">MealSwipeRight</span>
+          <span className="brand-chip">glass</span>
+        </div>
+        <nav className="app-tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`app-tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabSelect(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      <div className="app-core">
+        {!isImmersiveSwiping && (
+          <MacroSidebar
+            likedFoods={likedFoods}
+            caloricMaintenance={caloricMaintenance}
+          />
+        )}
+        <div className="app-main-content">
+          {renderPage()}
+        </div>
       </div>
-      <NavSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      {/* Keep bottom tab navigation for mobile */}
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {!isImmersiveSwiping && (
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      )}
     </div>
   );
 }

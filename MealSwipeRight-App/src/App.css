@@ -1,31 +1,113 @@
 .app {
   min-height: 100vh;
-  position: relative;
-  background: #0f0f0f;
-  color: #fff;
+  width: 100%;
   display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.5vw, 40px);
+  padding: clamp(20px, 3vw, 40px);
+  color: var(--text-primary);
+}
+
+.app-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.brand-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 16px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.app-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-tab-button {
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.app-tab-button:hover {
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.app-tab-button.active {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 51, 88, 0.4);
+  box-shadow: 0 10px 30px rgba(255, 51, 88, 0.22);
+}
+
+.app-core {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
 }
 
 .app-main-content {
-  flex: 1;
-  margin-left: 280px;
-  margin-right: 280px;
-  min-height: 100vh;
-  padding-bottom: 80px;
+  width: 100%;
+  min-height: calc(100vh - clamp(140px, 18vh, 220px));
+  padding: clamp(22px, 3vw, 44px);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  border: 1px solid var(--glass-border-soft);
+  box-shadow: var(--shadow-elevated);
+  backdrop-filter: blur(45px);
+  -webkit-backdrop-filter: blur(45px);
 }
 
-/* Mobile: hide sidebars, show bottom nav */
-@media (max-width: 1024px) {
-  .app-main-content {
-    margin-left: 0;
-    margin-right: 0;
+.app-onboarding .app-core {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-onboarding .app-main-content {
+  min-height: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: clamp(24px, 4vw, 56px);
+}
+
+@media (max-width: 1100px) {
+  .app-core {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 768px) {
+  .app {
+    padding-bottom: 120px;
+  }
+
   .app-main-content {
-    margin-left: 0;
-    margin-right: 0;
-    padding-bottom: 80px;
+    min-height: auto;
   }
 }

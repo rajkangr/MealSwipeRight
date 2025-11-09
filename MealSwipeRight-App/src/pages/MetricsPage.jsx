@@ -38,96 +38,126 @@ function MetricsPage({ likedFoods, gymData }) {
     return Math.max(...exerciseData.map(e => e.weight));
   };
 
+  const avgCalories = likedFoods.length ? Math.round(totalCalories / likedFoods.length) : 0;
+  const heroStats = [
+    { label: 'Liked meals', value: likedFoods.length },
+    { label: 'Avg calories', value: `${avgCalories} kcal` },
+    { label: 'Bench max', value: `${getMaxWeight(sampleGymStats.benchPress)} lbs` }
+  ];
+
   return (
-    <div className="metrics-page">
-      <div className="metrics-header">
-        <h1>Metrics</h1>
+    <div className="metrics-page page-shell">
+      <header className="metrics-hero">
+        <div className="hero-pill">Daily brief</div>
+        <h1>Performance snapshot</h1>
+        <p>Track how your dining choices and training sessions sync up this week.</p>
+        <div className="metrics-hero-stats">
+          {heroStats.map((stat) => (
+            <div key={stat.label} className="metrics-hero-stat">
+              <span className="stat-label">{stat.label}</span>
+              <span className="stat-value">{stat.value}</span>
+            </div>
+          ))}
+        </div>
+      </header>
+
+      <div className="metrics-overview-grid">
+        <div className="metric-card glass">
+          <span className="metric-label">Total calories unlocked</span>
+          <div className="metric-value">{totalCalories}</div>
+          <p className="metric-hint">Based on liked foods.</p>
+        </div>
+        <div className="metric-card glass">
+          <span className="metric-label">Favorites saved</span>
+          <div className="metric-value">{likedFoods.length}</div>
+          <p className="metric-hint">Curate at least 5 to unlock deeper insights.</p>
+        </div>
       </div>
 
-      <div className="metrics-content">
-        <section className="metric-section">
-          <h2>Food Stats</h2>
-          <div className="metric-card">
-            <div className="metric-value">{totalCalories}</div>
-            <div className="metric-label">Total Calories (Liked Foods)</div>
+      <section className="metric-section glass">
+        <div className="section-heading">
+          <div>
+            <p className="panel-eyebrow">Taste tracker</p>
+            <h2>Recently liked foods</h2>
           </div>
-          <div className="metric-card">
-            <div className="metric-value">{likedFoods.length}</div>
-            <div className="metric-label">Total Foods Liked</div>
-          </div>
-        </section>
-
-        <section className="metric-section">
-          <h2>Recently Liked Foods</h2>
-          {recentLikedFoods.length > 0 ? (
-            <div className="recent-foods-list">
-              {recentLikedFoods.map((food, index) => (
-                <div key={index} className="recent-food-item">
+        </div>
+        {recentLikedFoods.length > 0 ? (
+          <div className="recent-foods-list">
+            {recentLikedFoods.map((food, index) => (
+              <div key={index} className="recent-food-item">
+                <div>
                   <div className="food-name">{food.name}</div>
-                  <div className="food-details">
-                    <span>{food.calories} cal</span>
-                    <span className="food-location">{food.location}</span>
-                  </div>
+                  <div className="food-location">{food.location}</div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              <p>No liked foods yet. Start swiping to see your favorites here!</p>
-            </div>
-          )}
-        </section>
-
-        <section className="metric-section">
-          <h2>Gym Stats</h2>
-          <div className="gym-stats-grid">
-            <div className="gym-stat-card">
-              <div className="gym-stat-title">Bench Press</div>
-              <div className="gym-stat-value">{getMaxWeight(sampleGymStats.benchPress)} lbs</div>
-              <div className="gym-stat-label">Max Weight</div>
-              <div className="gym-stat-progress">
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${(getMaxWeight(sampleGymStats.benchPress) / 225) * 100}%` }}
-                  ></div>
+                <div className="food-details">
+                  <span>{food.calories} cal</span>
                 </div>
               </div>
-            </div>
-            <div className="gym-stat-card">
-              <div className="gym-stat-title">Squat</div>
-              <div className="gym-stat-value">{getMaxWeight(sampleGymStats.squat)} lbs</div>
-              <div className="gym-stat-label">Max Weight</div>
-              <div className="gym-stat-progress">
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${(getMaxWeight(sampleGymStats.squat) / 315) * 100}%` }}
-                  ></div>
-                </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p>No liked foods yet. Start swiping to see your favorites here!</p>
+          </div>
+        )}
+      </section>
+
+      <section className="metric-section glass">
+        <div className="section-heading">
+          <div>
+            <p className="panel-eyebrow">Training room</p>
+            <h2>Gym stats</h2>
+          </div>
+        </div>
+        <div className="gym-stats-grid">
+          <div className="gym-stat-card">
+            <div className="gym-stat-title">Bench Press</div>
+            <div className="gym-stat-value">{getMaxWeight(sampleGymStats.benchPress)} lbs</div>
+            <div className="gym-stat-label">Max Weight</div>
+            <div className="gym-stat-progress">
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${(getMaxWeight(sampleGymStats.benchPress) / 225) * 100}%` }}
+                ></div>
               </div>
             </div>
           </div>
-
-          <div className="gym-graph-section">
-            <h3>Bench Press Progress</h3>
-            <div className="simple-graph">
-              {sampleGymStats.benchPress.map((point, index) => (
-                <div key={index} className="graph-bar-container">
-                  <div 
-                    className="graph-bar"
-                    style={{ height: `${(point.weight / 200) * 100}%` }}
-                    title={`${point.weight}lbs - ${point.reps} reps`}
-                  >
-                    <span className="graph-value">{point.weight}</span>
-                  </div>
-                  <div className="graph-label">{new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                </div>
-              ))}
+          <div className="gym-stat-card">
+            <div className="gym-stat-title">Squat</div>
+            <div className="gym-stat-value">{getMaxWeight(sampleGymStats.squat)} lbs</div>
+            <div className="gym-stat-label">Max Weight</div>
+            <div className="gym-stat-progress">
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${(getMaxWeight(sampleGymStats.squat) / 315) * 100}%` }}
+                ></div>
+              </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div className="gym-graph-section">
+          <h3>Bench Press Progress</h3>
+          <div className="simple-graph">
+            {sampleGymStats.benchPress.map((point, index) => (
+              <div key={index} className="graph-bar-container">
+                <div
+                  className="graph-bar"
+                  style={{ height: `${(point.weight / 200) * 100}%` }}
+                  title={`${point.weight}lbs - ${point.reps} reps`}
+                >
+                  <span className="graph-value">{point.weight}</span>
+                </div>
+                <div className="graph-label">
+                  {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

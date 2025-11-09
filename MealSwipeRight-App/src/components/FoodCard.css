@@ -235,8 +235,8 @@
   border-radius: 20px;
   max-width: 600px;
   width: 100%;
-  height: calc(100vh - 100px);
-  max-height: calc(100vh - 100px);
+  height: min(72vh, 600px);
+  max-height: min(72vh, 600px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -404,8 +404,8 @@
   }
 
   .food-details-modal {
-    height: calc(100vh - 100px);
-    max-height: calc(100vh - 100px);
+    height: min(85vh, 720px);
+    max-height: min(85vh, 720px);
     border-radius: 15px;
   }
 

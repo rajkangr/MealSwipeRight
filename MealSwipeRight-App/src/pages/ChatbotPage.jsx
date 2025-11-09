@@ -97,9 +97,11 @@ function ChatbotPage({
   };
 
   return (
-    <div className="chatbot-page">
+    <div className="chatbot-page page-shell">
       <div className="chatbot-header">
+        <div className="hero-pill">AI co-pilot</div>
         <h1>Nutrition Assistant</h1>
+        <p>Ask for meal ideas, macro tweaks, or plan adjustments whenever you need a second brain.</p>
         {apiKeyError && (
           <div className="api-key-warning">
             <p>Gemini API key not configured. Please set VITE_GEMINI_API_KEY in your .env file.</p>
@@ -108,7 +110,7 @@ function ChatbotPage({
         )}
       </div>
       
-      <div className="chatbot-content">
+      <div className="chatbot-content glass">
         <div className="chat-messages">
           {messages.map((message, index) => (
             <div

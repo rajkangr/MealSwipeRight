@@ -1,121 +1,138 @@
 .macro-sidebar {
-  width: 280px;
-  background: #1a1a1a;
-  color: #fff;
-  padding: 20px;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  overflow-y: auto;
-  border-right: 1px solid #333;
-  z-index: 100;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: clamp(20px, 3vw, 32px);
+  background: var(--bg-panel);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-soft);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
 }
 
-.macro-sidebar-header {
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #333;
+.macro-sidebar-header p {
+  margin: 0;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.75rem;
 }
 
 .macro-sidebar-header h2 {
-  margin: 0;
-  font-size: 1.3rem;
-  color: #fff;
+  margin: 6px 0 0;
+  font-size: 1.5rem;
+}
+
+.macro-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.macro-highlight-card {
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.macro-highlight-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+}
+
+.macro-highlight-value {
+  font-size: 1.8rem;
   font-weight: 600;
 }
 
-.macro-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.macro-card {
-  background: rgba(26, 26, 26, 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 12px;
-  padding: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  transition: all 0.2s;
-}
-
-.macro-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  background: rgba(42, 42, 42, 0.5);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-}
-
-.macro-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.macro-title {
-  font-size: 0.9rem;
-  color: #b0b0b0;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.macro-value-display {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #e0e0e0;
-  margin-bottom: 10px;
-}
-
-.macro-progress-bar {
+.macro-highlight-progress {
   width: 100%;
-  height: 8px;
-  background: #333;
-  border-radius: 4px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  margin-bottom: 5px;
 }
 
-.macro-progress-fill {
+.macro-highlight-fill {
   height: 100%;
-  background: #666;
-  border-radius: 4px;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
   transition: width 0.3s ease;
 }
 
-.macro-percentage {
-  font-size: 0.85rem;
-  color: #999;
-  text-align: right;
+.macro-highlight-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.macro-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.macro-secondary-card {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.macro-secondary-title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.macro-secondary-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.macro-secondary-progress {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.macro-secondary-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
 }
 
 .macro-warning {
-  margin-top: 20px;
-  padding: 12px;
-  background: #2a2a2a;
-  border-radius: 8px;
-  border: 1px solid #444;
-}
-
-.macro-warning p {
-  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.02);
   font-size: 0.85rem;
-  color: #999;
-  text-align: center;
+  color: var(--text-muted);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .macro-sidebar {
-    width: 240px;
+    max-width: 100%;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .macro-sidebar {
     display: none;
   }
 }
-

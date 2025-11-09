@@ -1,79 +1,95 @@
 .nav-sidebar {
-  width: 280px;
-  background: #1a1a1a;
-  color: #fff;
-  padding: 20px;
-  height: 100vh;
-  position: fixed;
-  right: 0;
-  top: 0;
-  border-left: 1px solid #333;
-  z-index: 100;
+  width: 100%;
+  max-width: 320px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  padding: clamp(20px, 2vw, 28px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-soft);
+  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: clamp(20px, 4vw, 48px);
+  height: calc(100vh - clamp(40px, 8vw, 120px));
+  overflow: hidden;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
 }
 
 .nav-sidebar-header {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #333;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .app-logo {
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .logo-text {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
 .nav-menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 15px;
-  background: transparent;
-  border: none;
-  border-radius: 10px;
-  color: #b0b0b0;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   text-align: left;
   width: 100%;
   font-weight: 500;
 }
 
 .nav-item:hover {
-  background: #252525;
-  color: #e0e0e0;
-  transform: translateX(-3px);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  transform: translateX(-4px);
 }
 
 .nav-item.active {
-  background: #333;
-  color: #fff;
-  font-weight: 600;
-  border-left: 3px solid #666;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: rgba(255, 51, 88, 0.4);
+  box-shadow: 0 10px 30px rgba(255, 51, 88, 0.25);
 }
 
 .nav-label {
   font-size: 1rem;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 1100px) {
+  .nav-sidebar {
+    max-width: 280px;
+  }
 }
 
 @media (max-width: 1024px) {
   .nav-sidebar {
-    width: 240px;
+    position: static;
+    height: auto;
+    max-width: 100%;
+    border-radius: var(--radius-md);
   }
 }
 

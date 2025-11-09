@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import './GymPage.css';
 
 function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
@@ -110,14 +110,34 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
   };
 
   const currentWorkout = workouts.find(w => w.id === activeWorkout);
+  const totalExercises = workouts.reduce((sum, workout) => sum + workout.exercises.length, 0);
+  const totalSets = workouts.reduce(
+    (sum, workout) => sum + workout.exercises.reduce((inner, exercise) => inner + exercise.sets.length, 0),
+    0
+  );
+  const heroStats = [
+    { label: 'Workouts logged', value: workouts.length },
+    { label: 'Exercises tracked', value: totalExercises },
+    { label: 'Total sets', value: totalSets }
+  ];
 
   return (
-    <div className="gym-page">
-      <div className="gym-header">
-        <h1>Gym</h1>
-      </div>
+    <div className="gym-page page-shell">
+      <header className="gym-header">
+        <div className="hero-pill">Training log</div>
+        <h1>Gym sessions</h1>
+        <p>Keep a lightweight record of every lift so your nutrition plan stays in sync.</p>
+        <div className="gym-hero-stats">
+          {heroStats.map(stat => (
+            <div key={stat.label} className="gym-hero-stat">
+              <span className="stat-label">{stat.label}</span>
+              <span className="stat-value">{stat.value}</span>
+            </div>
+          ))}
+        </div>
+      </header>
 
-      <div className="gym-content">
+      <div className="gym-content glass">
         {!activeWorkout ? (
           <div className="workout-list-view">
             <div className="new-workout-section">
@@ -160,7 +180,7 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
                           className="delete-workout-button"
                           onClick={() => deleteWorkout(workout.id)}
                         >
-                          🗑️
+                          ðŸ—‘ï¸
                         </button>
                       </div>
                       <div className="workout-summary">
@@ -230,4 +250,5 @@ function GymPage({ onWorkoutUpdate, workouts: parentWorkouts }) {
 }
 
 export default GymPage;
+
 
