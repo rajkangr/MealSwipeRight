@@ -40,9 +40,9 @@ function MetricsPage({ likedFoods, gymData }) {
 
   const avgCalories = likedFoods.length ? Math.round(totalCalories / likedFoods.length) : 0;
   const heroStats = [
-    { label: 'Liked meals', value: likedFoods.length },
-    { label: 'Avg calories', value: `${avgCalories} kcal` },
-    { label: 'Bench max', value: `${getMaxWeight(sampleGymStats.benchPress)} lbs` }
+    { label: 'Liked meals: ', value: likedFoods.length },
+    { label: 'Avg calories: ', value: `${avgCalories} kcal` },
+    { label: 'Bench max: ', value: `${getMaxWeight(sampleGymStats.benchPress)} lbs` }
   ];
 
   return (
