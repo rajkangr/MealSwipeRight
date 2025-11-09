@@ -1,14 +1,8 @@
-# MealSwipeRight 🍽️
+# MealSwipeRight 
 
-A Tinder-style React web application for swiping through food options from UMass Dining. Swipe right if you like the food, swipe left if you don't!
+Project for HackUMass2025
+Worked with Ayush Nadiger
 
-## Features
-
-- 🎯 **Tinder-style Swiping**: Swipe cards left or right using touch gestures or mouse drag
-- 📊 **Real-time Stats**: Track how many foods you've liked and disliked
-- 🍕 **Food Information**: View detailed nutritional information, allergens, and dietary information
-- 🎨 **Beautiful UI**: Modern gradient design with smooth animations
-- 📱 **Responsive**: Works on both desktop and mobile devices
 
 ## Getting Started
 
@@ -96,7 +90,3 @@ useEffect(() => {
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
-
-## License
-
-MIT
