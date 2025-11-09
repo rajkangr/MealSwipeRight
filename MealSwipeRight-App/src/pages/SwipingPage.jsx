@@ -1,43 +1,117 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import FoodCard from '../components/FoodCard';
 import Settings from '../components/Settings';
-import foodData from '../data/foodData.json';
+import { loadFoodData } from '../utils/foodDataLoader';
 import './SwipingPage.css';
 
-function SwipingPage({ preferences, onPreferencesChange, userInfo, onUserInfoChange, onLikedFoodsChange }) {
+function SwipingPage({ 
+  preferences, 
+  onPreferencesChange, 
+  userInfo, 
+  onUserInfoChange, 
+  onLikedFoodsChange,
+  swipingState,
+  onSwipingStateChange
+}) {
   const [allFoods, setAllFoods] = useState([]);
   const [foods, setFoods] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedFoods, setLikedFoods] = useState([]);
   const [dislikedFoods, setDislikedFoods] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const isInitialMount = useRef(true);
+  const prevPreferencesRef = useRef(null);
+
+  // Restore state from parent only on initial mount
+  useEffect(() => {
+    if (isInitialMount.current && swipingState) {
+      // Initial mount - restore state if available
+      const prevDiningHall = swipingState.preferences?.diningHall;
+      if (prevDiningHall === preferences?.diningHall) {
+        // Same preferences, restore state
+        setCurrentIndex(swipingState.currentIndex || 0);
+        setLikedFoods(swipingState.likedFoods || []);
+        setDislikedFoods(swipingState.dislikedFoods || []);
+      }
+      isInitialMount.current = false;
+      prevPreferencesRef.current = preferences?.diningHall;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
+  // Handle preferences changes separately
+  useEffect(() => {
+    if (!isInitialMount.current) {
+      const prevDiningHall = prevPreferencesRef.current;
+      const currentDiningHall = preferences?.diningHall;
+      
+      if (prevDiningHall !== currentDiningHall) {
+        // Preferences changed, reset state
+        setCurrentIndex(0);
+        setLikedFoods([]);
+        setDislikedFoods([]);
+        prevPreferencesRef.current = currentDiningHall;
+      }
+    }
+  }, [preferences?.diningHall]);
 
   useEffect(() => {
-    // Convert numeric values to strings for consistency and handle NaN/null
-    const processedFoods = foodData.map(food => ({
-      ...food,
-      calories: String(food.calories && !isNaN(food.calories) ? food.calories : ''),
-      calories_from_fat: String(food.calories_from_fat && !isNaN(food.calories_from_fat) ? food.calories_from_fat : ''),
-      total_fat_g: String(food.total_fat_g && !isNaN(food.total_fat_g) ? food.total_fat_g : ''),
-      saturated_fat_g: String(food.saturated_fat_g && !isNaN(food.saturated_fat_g) ? food.saturated_fat_g : ''),
-      trans_fat_g: String(food.trans_fat_g && !isNaN(food.trans_fat_g) ? food.trans_fat_g : ''),
-      cholesterol_mg: String(food.cholesterol_mg && !isNaN(food.cholesterol_mg) ? food.cholesterol_mg : ''),
-      sodium_mg: String(food.sodium_mg && !isNaN(food.sodium_mg) ? food.sodium_mg : ''),
-      total_carb_g: String(food.total_carb_g && !isNaN(food.total_carb_g) ? food.total_carb_g : ''),
-      dietary_fiber_g: String(food.dietary_fiber_g && !isNaN(food.dietary_fiber_g) ? food.dietary_fiber_g : ''),
-      sugars_g: String(food.sugars_g && !isNaN(food.sugars_g) ? food.sugars_g : ''),
-      protein_g: String(food.protein_g && !isNaN(food.protein_g) ? food.protein_g : ''),
-      diet_types: food.diet_types || '',
-      allergens: food.allergens || '',
-      category: food.category || '',
-      meal_type: food.meal_type || 'unknown'
-    }));
-    setAllFoods(processedFoods);
+    // Load food data dynamically
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const foodData = await loadFoodData();
+        
+        // Handle both old format (array) and new format (object with foods array)
+        const foodsArray = Array.isArray(foodData) ? foodData : (foodData.foods || []);
+        
+        // Convert numeric values to strings for consistency and handle NaN/null
+        const processedFoods = foodsArray.map(food => ({
+          ...food,
+          calories: String(food.calories && !isNaN(food.calories) ? food.calories : ''),
+          calories_from_fat: String(food.calories_from_fat && !isNaN(food.calories_from_fat) ? food.calories_from_fat : ''),
+          total_fat_g: String(food.total_fat_g && !isNaN(food.total_fat_g) ? food.total_fat_g : ''),
+          saturated_fat_g: String(food.saturated_fat_g && !isNaN(food.saturated_fat_g) ? food.saturated_fat_g : ''),
+          trans_fat_g: String(food.trans_fat_g && !isNaN(food.trans_fat_g) ? food.trans_fat_g : ''),
+          cholesterol_mg: String(food.cholesterol_mg && !isNaN(food.cholesterol_mg) ? food.cholesterol_mg : ''),
+          sodium_mg: String(food.sodium_mg && !isNaN(food.sodium_mg) ? food.sodium_mg : ''),
+          total_carb_g: String(food.total_carb_g && !isNaN(food.total_carb_g) ? food.total_carb_g : ''),
+          dietary_fiber_g: String(food.dietary_fiber_g && !isNaN(food.dietary_fiber_g) ? food.dietary_fiber_g : ''),
+          sugars_g: String(food.sugars_g && !isNaN(food.sugars_g) ? food.sugars_g : ''),
+          protein_g: String(food.protein_g && !isNaN(food.protein_g) ? food.protein_g : ''),
+          diet_types: food.diet_types || '',
+          allergens: food.allergens || '',
+          category: food.category || '',
+          meal_type: food.meal_type || 'unknown'
+        }));
+        setAllFoods(processedFoods);
+      } catch (error) {
+        console.error('Error loading food data:', error);
+        setAllFoods([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
   }, []);
+  
+  // Save swiping state to parent when it changes (but not on initial mount)
+  useEffect(() => {
+    if (!isInitialMount.current && onSwipingStateChange) {
+      onSwipingStateChange({
+        currentIndex,
+        likedFoods,
+        dislikedFoods,
+        preferences: preferences // Store preferences to detect changes
+      });
+    }
+  }, [currentIndex, likedFoods, dislikedFoods, preferences, onSwipingStateChange]);
 
   // Filter foods based on preferences
   useEffect(() => {
-    if (!preferences || !preferences.diningHall) {
+    if (!preferences || !preferences.diningHall || isLoading) {
       setFoods([]);
       return;
     }
@@ -79,8 +153,8 @@ function SwipingPage({ preferences, onPreferencesChange, userInfo, onUserInfoCha
     }
 
     setFoods(filtered);
-    setCurrentIndex(0);
-  }, [preferences, allFoods]);
+    // Don't reset index here - let the preferences change effect handle it
+  }, [preferences, allFoods, isLoading]);
 
   const handleSwipe = (direction) => {
     if (currentIndex >= foods.length) return;
@@ -170,7 +244,12 @@ function SwipingPage({ preferences, onPreferencesChange, userInfo, onUserInfoCha
       </div>
 
       <main className="swiping-main">
-        {foods.length === 0 ? (
+        {isLoading ? (
+          <div className="end-screen">
+            <h2>Loading...</h2>
+            <p>Loading food data...</p>
+          </div>
+        ) : foods.length === 0 ? (
           <div className="end-screen">
             <h2>😔 No Foods Found</h2>
             <p>No foods match your preferences. Try adjusting your settings!</p>

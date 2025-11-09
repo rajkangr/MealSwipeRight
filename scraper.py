@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
+import json
 import time
+from datetime import datetime
 
 
 def scrape_umass_dining(location='hampshire', date=None):
@@ -95,32 +96,61 @@ def scrape_all_locations():
     return all_data
 
 
-def save_to_csv(data, filename='um_dining.csv'):
+def save_to_json(data, filename='MealSwipeRight-App/src/data/foodData.json'):
+    """Save scraped data to JSON file with timestamp"""
     if not data:
         print("No data")
         return None
 
-    df = pd.DataFrame(data)
+    # Add timestamp to data
+    output_data = {
+        'timestamp': datetime.now().isoformat(),
+        'date': datetime.now().strftime('%Y-%m-%d'),
+        'foods': data
+    }
 
-    numeric_cols = ['calories', 'calories_from_fat', 'total_fat_g', 'saturated_fat_g',
-                    'trans_fat_g', 'cholesterol_mg', 'sodium_mg', 'total_carb_g',
-                    'dietary_fiber_g', 'sugars_g', 'protein_g']
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(output_data, f, indent=2, ensure_ascii=False)
 
-    for col in numeric_cols:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
+    print(f"\n Saved {len(data)} items to {filename}")
+    print(f"Timestamp: {output_data['timestamp']}")
 
-    df.to_csv(filename, index=False)
-    print(f"\n Saved {len(df)} items to {filename}")
+    return output_data
 
-    return df
 
+def should_rescrape(json_file='MealSwipeRight-App/src/data/foodData.json'):
+    """Check if data needs to be re-scraped (after midnight)"""
+    try:
+        with open(json_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        if 'timestamp' not in data:
+            return True
+        
+        # Parse the timestamp
+        saved_time = datetime.fromisoformat(data['timestamp'])
+        saved_date = saved_time.date()
+        current_date = datetime.now().date()
+        
+        # If saved date is before today, need to re-scrape
+        return saved_date < current_date
+    except (FileNotFoundError, json.JSONDecodeError, KeyError, ValueError):
+        # File doesn't exist or is invalid, need to scrape
+        return True
 
 def main():
-    hamp_data = scrape_umass_dining('hampshire')
-    data = scrape_all_locations()
-
-    if data:
-        df = save_to_csv(data)
+    json_file = 'MealSwipeRight-App/src/data/foodData.json'
+    
+    # Check if we need to re-scrape
+    if should_rescrape(json_file):
+        print("Menu data is outdated or missing. Scraping new data...")
+        data = scrape_all_locations()
+        
+        if data:
+            save_to_json(data, json_file)
+    else:
+        print("Menu data is up to date. No scraping needed.")
+        print("To force re-scrape, delete the JSON file or wait until after midnight.")
 
 
 if __name__ == "__main__":

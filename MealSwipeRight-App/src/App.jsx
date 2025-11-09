@@ -16,6 +16,12 @@ function App() {
     age: ''
   });
   const [likedFoods, setLikedFoods] = useState([]);
+  const [swipingState, setSwipingState] = useState({
+    currentIndex: 0,
+    likedFoods: [],
+    dislikedFoods: [],
+    preferences: null
+  });
   const [gymData, setGymData] = useState({
     workouts: [],
     benchPress: [],
@@ -27,6 +33,7 @@ function App() {
     const savedPreferences = localStorage.getItem('preferences');
     const savedUserInfo = localStorage.getItem('userInfo');
     const savedLikedFoods = localStorage.getItem('likedFoods');
+    const savedSwipingState = localStorage.getItem('swipingState');
     const savedGymData = localStorage.getItem('gymData');
 
     if (savedPreferences) {
@@ -37,6 +44,9 @@ function App() {
     }
     if (savedLikedFoods) {
       setLikedFoods(JSON.parse(savedLikedFoods));
+    }
+    if (savedSwipingState) {
+      setSwipingState(JSON.parse(savedSwipingState));
     }
     if (savedGymData) {
       setGymData(JSON.parse(savedGymData));
@@ -61,6 +71,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem('likedFoods', JSON.stringify(likedFoods));
   }, [likedFoods]);
+
+  // Save swiping state to localStorage
+  useEffect(() => {
+    localStorage.setItem('swipingState', JSON.stringify(swipingState));
+  }, [swipingState]);
 
   // Save gym data to localStorage
   useEffect(() => {
@@ -130,6 +145,8 @@ function App() {
             userInfo={userInfo}
             onUserInfoChange={handleUserInfoChange}
             onLikedFoodsChange={setLikedFoods}
+            swipingState={swipingState}
+            onSwipingStateChange={setSwipingState}
           />
         );
       case 'metrics':
@@ -155,6 +172,8 @@ function App() {
           userInfo={userInfo}
           onUserInfoChange={handleUserInfoChange}
           onLikedFoodsChange={setLikedFoods}
+          swipingState={swipingState}
+          onSwipingStateChange={setSwipingState}
         />;
     }
   };
