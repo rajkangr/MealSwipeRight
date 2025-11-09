@@ -546,7 +546,7 @@ function SwipingPage({
             <div className="hero-progress-fill" style={{ width: `${progressPercent}%` }} />
           </div>
           <div className="hero-progress-meta">
-            <span>{totalSwiped}/{targetSwipes} dishes reviewed</span>
+            <span>{totalSwiped} dishes reviewed</span>
             <span>{hasTasteProfile ? 'Taste profile unlocked' : `${Math.max(targetSwipes - totalSwiped, 0)} more to go`}</span>
           </div>
         </div>
